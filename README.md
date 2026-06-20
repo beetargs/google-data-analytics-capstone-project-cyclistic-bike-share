@@ -15,5 +15,11 @@ In order to conduct my analysis of the data, I will be using Google's data analy
 5. Share
 6. Act
 
+### Ask
+In this phase of the data analysis process, the key aim is to identify the **business task**, which in this case is:  
 
-My goal is to provide actionable insights for the marketing team by identifying distinct usage patterns between two customer segments, casual riders and annual members.
+**Analyze historical bike trip data for the past 12 months to identify trends in how annual members and casual riders use Cyclistic bikes differently.**
+
+My goal is thus to provide actionable insights for the marketing team by identifying distinct usage patterns between these two customer segments.
+
+
