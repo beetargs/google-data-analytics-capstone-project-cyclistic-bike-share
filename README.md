@@ -26,7 +26,7 @@ My goal is thus to provide actionable insights for the marketing team by identif
 
 **Data Source**  
 
-In order to complete my data analysis, I made use of Cyclistic's historical trip data to analyze usage trends for the past twelve months which, in this case, was from June 2025 to May 2026. The data can be found [here](https://divvy-tripdata.s3.amazonaws.com/index.html). Although Cyclistic is a fictional company, the data is real data for a company called Divvy Bikes that is based in Chicago. The data has kindly been made available to us for the purposes of these capstone projects by them under this [license](https://divvybikes.com/data-license-agreement).
+In order to complete my data analysis, I made use of Cyclistic's historical trip data to analyze usage trends for the past twelve months which, in this case, was from June 2025 to May 2026. The original dataset can be found [here](https://divvy-tripdata.s3.amazonaws.com/index.html). Although Cyclistic is a fictional company, the data is real data for a company called Divvy Bikes that is based in Chicago. The data has kindly been made available to us for the purposes of these capstone projects by them under this [license](https://divvybikes.com/data-license-agreement).
 
 **Data Structure**  
 
