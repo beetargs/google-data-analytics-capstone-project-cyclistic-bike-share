@@ -50,7 +50,7 @@ The data has been provided in the form of CSV files, one file for each month, an
 
 **Data Limitations**  
 
-While the dataset provided by Divvy Bikes is overall comprehensive and reliable, it is subject to a few limitations that must be taken into account when performing an analysis on the data. After scrutinizing the data, these are the key observations that I have made:
+While the dataset provided by Divvy Bikes is overall comprehensive and reliable, it is subject to a few limitations that must be taken into account when performing an analysis on the data. After a brief initial exploratory data analysis using Excel, these are the key observations that I have made:
 
 1. **Lack of Personally Identifiable Information**  
 Data privacy regulations prohibit the use of riders' personal information. It is thus impossible to create profiles for individual riders, this includes both casual riders and annual members. While it can almost safely be assumed that most annual members are local Chicago residents, the implication of the lack of personally identifiable information is that we can deduce even less about casual riders, and we cannot determine is they are local Chicago residents, tourists or daily commuters. We are also unable to track if an individual has purchased multiple single-ride passes over time. This makes is impossible to distinguish between frequent casual riders and one-time tourists.
