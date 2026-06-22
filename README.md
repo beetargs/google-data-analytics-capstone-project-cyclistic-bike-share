@@ -30,7 +30,7 @@ In order to complete my data analysis, I made use of Cyclistic's historical trip
 
 **Data Structure**  
 
-The data has been provided in the form of CSV files, one file for each month, and with the naming structure of YYYYMM-divvy-tripdata. My combined dataset has thus been composed from 12 of these files in consecutive date order. Each row in these CSV files represents a single bike trip, with each of the trips having been anonymized and identified with a unique `ride_id` value. The primary key for each record is thus `ride_id`. The table below gives a description of the 13 column names, their data types, and a description of each column contained in the original CSV files:
+The data has been provided in the form of CSV files, one file for each month, and with the naming structure of 'YYYYMM-divvy-tripdata.csv'. My combined dataset has thus been composed from 12 of these files in consecutive date order. I used Excel to conduct an initial data assessment on the files, checking for things such as schema consistency and general data quality. Each row in these CSV files represents a single bike trip, with each of the trips having been anonymized and identified with a unique `ride_id` value. The primary key for each record is thus `ride_id`. The table below gives a description of the 13 column names, their data types, and a description of each column contained in the original CSV files:
 
 | Column Number | Column Name | Data Type | Description |
 | -: | - | - | - |
@@ -71,3 +71,33 @@ The dataset provides only "what happened" (the ride), but not "why it happened" 
 
 ### Process
 
+Due to the large size of the CSV datasets (millions of rows), I decided to use SQL via BigQuery in order to process the data as Excel would be an inefficient tool for this job due to its row limitations. BigQuery is the ideal tool for this job as it can easily and efficiently handle very large datasets containing millions of rows.
+
+However, as I am using the Sandbox version of BigQuery and do not have billing enabled on my account, I was unable to create a bucket in Google Cloud Services in order to upload the original CSV files, many of which exceed 100MB in size, which is the local file upload limit in BigQuery. My workaround to this problem was to use the Pandas library in Python to 'chunk' the CSV files into smaller files each containing 50,000 rows or less, and then upload those smaller files directly into BigQuery from my local storage device. I achieved that goal by running the following Python script in the folder containing the CSV source files:
+
+```
+import pandas as pd
+import os
+
+# Configuration
+input_folder = './'  # Files are in the current directory
+output_folder = './split_files/'
+chunk_size = 50000  # Adjust rows per file to ensure < 100MB
+os.makedirs(output_folder, exist_ok=True)
+
+# List all CSV files in directory
+files = [f for f in os.listdir(input_folder) if f.endswith('.csv')]
+
+for file in files:
+    print(f"Processing {file}...")
+    # Use chunksize to read large files without overloading RAM
+    reader = pd.read_csv(file, chunksize=chunk_size)
+    
+    for i, chunk in enumerate(reader):
+        chunk.to_csv(f"{output_folder}{file.split('.')[0]}_part_{i}.csv", index=False)
+
+print("Splitting complete.")
+```
+
+**Combining the Data**  
+After uploading the 'bucketed' CSV files to BigQuery, I combined them into a single table consisting of XXX rows, which represents an entire year of data. 
