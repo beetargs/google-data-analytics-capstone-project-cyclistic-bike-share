@@ -50,7 +50,7 @@ The data has been provided in the form of CSV files, one file for each month, an
 
 **Data Limitations**  
 
-While the dataset provided by Divvy Bikes is overall comprehensive and reliable, it is subject to a few limitations that must be taken into account when performing an analysis on the data. After a brief initial exploratory data analysis using Excel, these are the key observations that I have made:
+While the dataset provided by Divvy Bikes is overall comprehensive and reliable, it is subject to a few limitations that must be taken into account when performing an analysis on the data. After a brief initial exploratory data analysis using Excel, these are the key observations that I made:
 
 1. **Lack of Personally Identifiable Information**  
 Data privacy regulations prohibit the use of riders' personal information. It is thus impossible to create profiles for individual riders, this includes both casual riders and annual members. While it can almost safely be assumed that most annual members are local Chicago residents, the implication of the lack of personally identifiable information is that we can deduce even less about casual riders, and we cannot determine is they are local Chicago residents, tourists or daily commuters. We are also unable to track if an individual has purchased multiple single-ride passes over time. This makes is impossible to distinguish between frequent casual riders and one-time tourists.
@@ -71,9 +71,11 @@ The dataset provides only "what happened" (the ride), but not "why it happened" 
 
 ### Process
 
-Due to the large size of the CSV datasets (millions of rows), I decided to use SQL via BigQuery in order to process the data as Excel would be an inefficient tool for this job due to its row limitations. BigQuery is the ideal tool for this job as it can easily and efficiently handle very large datasets containing millions of rows.
+**Importing and Combining the Data**
 
-However, as I am using the Sandbox version of BigQuery and do not have billing enabled on my account, I was unable to create a bucket in Google Cloud Services in order to upload the original CSV files, many of which exceed 100MB in size, which is the local file upload limit in BigQuery. My workaround to this problem was to use the Pandas library in Python to 'chunk' the CSV files into smaller files each containing 50,000 rows or less, and then upload those smaller files directly into BigQuery from my local storage device. I achieved that goal by running the following Python script in the folder containing the CSV source files:
+Due to the large size of the CSV datasets (millions of rows), I decided to use SQL via BigQuery in order to process the data as Excel would've be an inefficient tool for this job due to the limitations of how many rows it can handle. BigQuery is the ideal tool for this job as it can easily and efficiently handle very large datasets containing millions of rows.
+
+However, as I am using the Sandbox version of BigQuery and do not have billing enabled on my account, I was unable to create a bucket in Google Cloud Services in order to upload the original CSV files to BigQuery, which would've been the preferred way of doing this. Many of these CSV files exceed 100MB in size, which is the local file upload limit in BigQuery, so this option was not available to me either. My workaround to this problem was to use the Pandas library in Python to 'chunk' the CSV files into smaller files each containing 50,000 rows or less, making the size of the files to be around 10MB each. I achieved this by running the following Python script in the folder containing the CSV source files:
 
 ```
 import pandas as pd
@@ -99,5 +101,21 @@ for file in files:
 print("Splitting complete.")
 ```
 
-**Combining the Data**  
-After uploading the 'bucketed' CSV files to BigQuery, I combined them into a single table consisting of XXX rows, which represents an entire year of data. 
+After the 'chunking' process was complete, I was left with 113 CSV files that now needed to be uploaded to BigQuery. BigQuery would not allow me to select multiple files using the 'Upload' option, and trying to upload them individually would've been time-consuming and inefficient, so I decided to use the 'bq' tool in the Google Cloud CLI suite of programs to automate the process of uploading those smaller CSV files directly into BigQuery from my local storage device.
+
+However, before I could do that, I had to create a table inside of BigQuery and populate it with the first of the chunked CSV files in order to create the table schema so that the remaining 112 files could be imported correctly. As this first file was a single file of only about 10MB in size, it was easy to upload it using the 'Upload' option in the BiqQuery web interface. I then removed this CSV file from the directory containing the other CSV files as I did not want to duplicate its data in the table by re-importing it into the table during the batch upload using the 'bq' tool. Further to this, as each of the chunked files each contained a header, I had to insert the `skip_leading_rows=1` parameter into the command line prompt to remove the headers so that they would not be imported into the table I was creating. This was the command line prompt that I used to import the remaining 112 files into BigQuery:
+
+```
+for %f in (*.csv) do bq load --source_format=CSV --skip_leading_rows=1 --noreplace cyclistic_capstone_project.cyclistic_12_months_dataset "%f"
+```
+
+After I performed the bulk ingestion of chunked CSV data into a single BigQuery relational table, I validated the result via this `COUNT(*)` query, confirming a total of 5,848,703 rows, representing an entire year of data:
+
+```
+SELECT
+  COUNT(*)
+FROM `course-493609.cyclistic_capstone_project.cyclistic_12_months_dataset`
+'''
+
+This table consists of raw data which still needs to be cleaned.
+
