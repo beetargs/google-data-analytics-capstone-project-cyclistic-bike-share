@@ -67,7 +67,7 @@ There are several trips where the `ended_at` time is before ot equal to the `sta
 Trips that last for only a few seconds or that are extremely long (more than 24 hours) should be considered to be anomalies. Very short rides can be assumed to be "false starts", where a user immediately re-docks a bike due to a mechanical issue or a change of mind. Very long rides could be assumed to be a stolen bike or one that wasn't docked correctly.
 
 6. **Limited Context**  
-The dataset provides only "what happened" (the ride), but not "why it happened" (the motivation). We thus lack qualitative data about the rides and have to infer intent from behaviour, which is an assumption, not a fact.
+The dataset provides only "what happened" (the ride), but not "why it happened" (the motivation). We thus lack qualitative data about the rides and have to infer intent from behaviour, which is an assumption, not a fact. To be more specific, the data does not tell us why any of the bikes were used, nor do we have any contextual data such as weather conditions, demographics of the riders, etc.
 
 ### Process
 
@@ -109,13 +109,66 @@ However, before I could do that, I had to create a table inside of BigQuery and 
 for %f in (*.csv) do bq load --source_format=CSV --skip_leading_rows=1 --noreplace cyclistic_capstone_project.cyclistic_12_months_dataset "%f"
 ```
 
+**Ingestion Verification**
+
 After I performed the bulk ingestion of chunked CSV data into a single BigQuery relational table, I validated the result via this `COUNT(*)` query, confirming a total of 5,848,703 rows, representing an entire year of data:
 
 ```
 SELECT
   COUNT(*)
 FROM `course-493609.cyclistic_capstone_project.cyclistic_12_months_dataset`
-'''
+```
 
-This table consists of raw data which still needs to be cleaned.
+I verified the data ingestion by using Excel to reconcile the total row count of the 12 CSV source files against the imported BigQuery table. The validation confirmed 5,848,703 records across both datasets, ensuring no data loss occurred during the upload from local storage to the cloud.
 
+**Data Cleaning**
+
+*Checked for Duplicate `ride_id` records*
+
+As `ride_id` is intended to be the unique identifier (primary key) for each individual bike ride, we can assume that there should be no duplicate `ride_id` entries in our dataset. I thus performed a validation in BigQuery using the following code:
+
+```
+SELECT 
+  ride_id, 
+  COUNT(*) AS total_occurrences
+FROM `course-493609.cyclistic_capstone_project.cyclistic_12_months_dataset`
+GROUP BY ride_id
+HAVING COUNT(*) > 1;
+```
+
+The query identified 35 duplicate `ride_id` entries which needed to be removed. To ensure data integrity, I created a cleaned version of the dataset by performing a `DISTINCT` selection, thus creating a new table:
+
+```
+CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset` AS
+SELECT DISTINCT *
+FROM `course-493609.cyclistic_capstone_project.cyclistic_12_months_dataset`
+```
+
+I then used a `COUNT(*)` query to verify that the new table had 35 rows less than the original table, which it did:
+
+```
+SELECT
+  COUNT(*)
+FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
+```
+
+*Checked for Missing Station Names*
+
+
+
+
+
+*Validated Ride Duration*
+
+
+
+
+
+
+The cleaning process removed XXX records from the dataset, leaving us with a total of XXX records, this representing XX% of the original source data.
+
+
+
+**Data Transformation**
+
+I created new calculated fields 
