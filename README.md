@@ -202,9 +202,9 @@ My audit revealed the following:
 | Ride duration > 18 hours | 6,982 |
 | Total anomalies | 122,609 |
 
-For the purposes of interpretation, it must be noted that the total number of anomalies wass calculated by adding together trips with ride durations less than one minute and longer than 18 hours, and that trips with ride durations less than zero and equal to zero are merely a subset of trips with ride durations less than one minute.
+For the purposes of interpretation, it must be noted that the total number of anomalies was calculated by adding together trips with ride durations less than one minute and longer than 18 hours, and that trips with ride durations less than zero and equal to zero are merely a subset of trips with ride durations less than one minute.
 
-The 122,609 ride duration anomalies represent only 2.09% of our dataset, so I felt confident in culling them as this reduction was statistically insignificant and enhances the reliability of our results. The cull was performed with the following code:
+The 122,609 ride duration anomalies represent only 2.09% of our dataset, so I felt confident in culling them as this reduction was statistically insignificant, but enhances the reliability of our results. The cull was performed with the following code:
 
 ```
 CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_durations_culled` AS
@@ -216,7 +216,7 @@ WHERE ride_duration_mins >= 1
 
 This produced a new table named 'cyclistic_durations_culled' containing 5,726,059 entries, which I verified the integrity of using a `COUNT(*)` query.
 
-However, as a data validation step, I wanted to check how the removal of these ride duration anomalies were skewing the results, so I performed a check on the datasets before and after culling using variations of this code:
+However, as a data validation step, I wanted to check if these ride duration anomalies were skewing the results, so I performed a check on the datasets before and after culling using variations of this code:
 
 ```
 SELECT 
@@ -232,9 +232,7 @@ FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
 | Shortest ride | -55 minutes | 1 minute |
 | Longest ride | 1,575 minutes | 1,080 minutes |
 
-As we can see, the ride duration anomalies were skewing our results to a significant degree, so their removal was justified.
-
-
+As we can see, the ride duration anomalies were skewing our results to a significant degree and had the potential to bias any potential insights we could gain from the data, so their removal was necessary and justified.
 
 *Checked for Missing Station Names and/or GPS Coordinates*
 
