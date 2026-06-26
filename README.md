@@ -216,8 +216,7 @@ WHERE ride_duration_mins >= 1
 
 This produced a new table named 'cyclistic_durations_culled' containing 5,726,059 entries, which I verified the integrity of using a `COUNT(*)` query.
 
-However, as a data validation step, I wanted to check if these ride duration anomalies were skewing the results, so I performed a check on the datasets before and after culling using variations of this code:
-
+To validate the data cleaning process, and to check if these anomalies were skewing the results, I conducted a comparative statistical audit by calculating the mean, minimum and maximum ride durations before and after the removal of these anomalies using variations of this code:
 ```
 SELECT 
   AVG(ride_duration_mins) AS average_ride_duration_mins,
@@ -226,13 +225,18 @@ SELECT
 FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
 ```
 
-| Item | Before the Cull | After the Cull |
-| :--- | ---: | ---: |
-| Average ride duration | 15.98 minutes | 14.57 minutes |
-| Shortest ride | -55 minutes | 1 minute |
-| Longest ride | 1,575 minutes | 1,080 minutes |
+As we can see from the table below, my filtering logic successfully isolated the intended outlier records without impacting the integrity of the dataset: 
 
-As we can see, the ride duration anomalies were skewing our results to a significant degree and had the potential to bias any potential insights we could gain from the data, so their removal was necessary and justified.
+| Statistic | Before Cleaning | After Cleaning | Change Value | Change Percent |
+| :--- | ---: | ---: | ---: | ---: |
+| Row Count | 5,848,668 | 5,726,059 | -122,609 | -2.09% | 
+| Avg ride duration (mins) | 15.98 | 14.57 | -1.41 | -8.82% |
+| Min ride duration (mins) | -55 | 1 | 56 | -101.82% |
+| Max ride duration (mins) | 1,575 | 1,080 | -495 | -31.43% |
+
+We have confirmed that these ride duration anomalies were skewing our results to a significant degree and had the potential to bias any potential insights we could gain from the data, so their removal was necessary and justified.
+
+
 
 *Checked for Missing Station Names and/or GPS Coordinates*
 
@@ -249,12 +253,16 @@ SELECT
 FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
 ```
 The query showed the following:
-Missing Start Station = 1,249,661
-Missing End Station = 1,314,320
-Missing Both Station = 593,702
-Missing Either Station = 1,970,279
+
+| Anomaly | Number of Occurences |
+| :--- | ---: |
+| Missing Start Station | 1,249,661 |
+| Missing End Station | 1,314,320 |
+| Missing Both Stations | 593,702 |
+| Missing Either Station | 1,970,279 |
 
 
+**Avoiding Selection Bias**
 
 
 
