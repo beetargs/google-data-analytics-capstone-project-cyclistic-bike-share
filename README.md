@@ -175,7 +175,7 @@ SELECT
 FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
 ```
 
-After engineering the `ride_duration_mins` feature, I performed a quality audit using an anomaly threshold query. This enabled me to quantify non-representative data, ensuring that the final analysis focuses exclusively on valid, intentional trips. This is the code that I used to achieve this:
+After engineering the `ride_duration_mins` feature, I performed a quality audit using an anomaly threshold query. This enabled me to quantify non-representative data, ensuring that the final analysis focuses exclusively on valid, intentional trips:
 
 ```
 SELECT
@@ -204,7 +204,7 @@ My audit revealed the following:
 
 For the purposes of interpretation, it must be noted that the total number of anomalies was calculated by adding together trips with ride durations less than one minute and longer than 18 hours, and that trips with ride durations less than zero and equal to zero are merely a subset of trips with ride durations less than one minute.
 
-The 122,609 ride duration anomalies represent only 2.09% of our dataset, so I felt confident in culling them as this reduction was statistically insignificant, but enhances the reliability of our results. The cull was performed with the following code:
+The 122,609 ride duration anomalies represent only 2.09% of our dataset, so I felt confident in culling them as this reduction was statistically insignificant, but enhances the reliability of our results. The culling of these outliers was performed with the following code:
 
 ```
 CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_durations_culled` AS
@@ -238,12 +238,6 @@ As we can see, the ride duration anomalies were skewing our results to a signifi
 
 As stated earlier, my initial exploration of the data revealed that a significant portion of the dataset contains missing start and end station names. A decision had to be made about how to handle these trips with missing station/coordinate data. I decided that the primary source of location "truth" for each bike trip should be the station names, as bikes need to be physically docked in order for station names to be recorded in the trip records. In the case of missing station names (either start or end), I decided that a prudent approach 
 
-
-
-
-
-
-
 I ran this query in BigQuery to get the exact figures:
 
 ```
@@ -264,16 +258,7 @@ Missing Either Station = 1,970,279
 
 
 
+The entire data cleaning process removed XXX records from the dataset, leaving us with a total of XXX records, this representing XX% of the original source data.
 
 
 
-
-
-
-The cleaning process removed XXX records from the dataset, leaving us with a total of XXX records, this representing XX% of the original source data.
-
-
-
-**Data Transformation**
-
-I created new calculated fields 
