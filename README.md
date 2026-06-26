@@ -50,23 +50,21 @@ The data has been provided in the form of CSV files, one file for each month, an
 
 **Data Limitations**  
 
-While the dataset provided by Divvy Bikes is overall comprehensive and reliable, it is subject to a few limitations that must be taken into account when performing an analysis on the data. After a brief initial exploratory data analysis using Excel, these are the key observations that I made:
+While the dataset provided by Divvy Bikes is overall comprehensive and reliable, it is subject to several limitations that must be taken into account when performing an analysis on the data. After a brief initial exploratory data analysis using Excel, these are the key observations that I made:
 
 1. **Lack of Personally Identifiable Information**  
 Data privacy regulations prohibit the use of riders' personal information. It is thus impossible to create profiles for individual riders, this includes both casual riders and annual members. While it can almost safely be assumed that most annual members are local Chicago residents, the implication of the lack of personally identifiable information is that we can deduce even less about casual riders, and we cannot determine is they are local Chicago residents, tourists or daily commuters. We are also unable to track if an individual has purchased multiple single-ride passes over time. This makes is impossible to distinguish between frequent casual riders and one-time tourists.
 
 2. **Missing Station and GPS Coordinate Data**  
-Approximately 30% of the dataset contains missing `start_station_name`, `end_station_name` or GPS coordinate fields. This represents a significant portion of the dataset. However, due to the very large size of the dataset, we still have sufficient complete data to work with. While we do mostly have the GPS coordinates for these trips with missing station fields, the lack of station names makes it harder to analyze station-specific usage patterns without extra data-cleaning steps, such as mapping the available GPS coordinates back to known stations in the bike-share network.
+A large portion of the dataset contains missing `start_station_name`, `end_station_name`, or GPS coordinate fields. This represents a significant portion of the dataset. While we do mostly have the GPS coordinates for these trips with missing station fields, the lack of station names makes it harder to analyze station-specific usage patterns without extra data-cleaning steps, such as mapping the available GPS coordinates back to known stations in the bike-share network.
 
-    There are, however, a limitations when it comes to trying to map GPS coordinates to the known stations. There is the phenomenon of 'GPS drift'. This occurs when a GPS sensor records a location that deviates from its true physical position. This often happens due to environmental noise such as signal blockage caused by trees, building structures or bad weather, but can also be caused by tall buildings reflecting the satellite signals, making it look like a bike is a block away from where it actually is. In a built-up city such as Chicago, these effects are even more pronounced. The end result of GPS drift is that bikes can be incorrectly mapped to the wrong station (such as a nearby neighbouring station), or no station at all, depending on how severe the GPS drift was. In the latter case, this would introduce ghost trips, distorting our analysis completely.
-
-4. **Negative/Zero Ride Lengths**  
+3. **Negative/Zero Ride Lengths**  
 There are several trips where the `ended_at` time is before ot equal to the `started_at` time. We can assume that these instances can be related to system maintenance, bike checks, or technical glitches in the docking sensor.
 
-5. **Extremely Short/Long Rides**  
+4. **Extremely Short/Long Rides**  
 Trips that last for only a few seconds or that are extremely long (more than 24 hours) should be considered to be anomalies. Very short rides can be assumed to be "false starts", where a user immediately re-docks a bike due to a mechanical issue or a change of mind. Very long rides could be assumed to be a stolen bike or one that wasn't docked correctly.
 
-6. **Limited Context**  
+5. **Limited Context**  
 The dataset provides only "what happened" (the ride), but not "why it happened" (the motivation). We thus lack qualitative data about the rides and have to infer intent from behaviour, which is an assumption, not a fact. To be more specific, the data does not tell us why any of the bikes were used, nor do we have any contextual data such as weather conditions, demographics of the riders, etc.
 
 ### Process
@@ -121,7 +119,7 @@ FROM `course-493609.cyclistic_capstone_project.cyclistic_12_months_dataset`
 
 I verified the data ingestion by using Excel to reconcile the total row count of the 12 CSV source files against the imported BigQuery table. The validation confirmed 5,848,703 records across both datasets, ensuring no data loss occurred during the upload from local storage to the cloud.
 
-**Data Cleaning**
+**Data Cleaning and Transformation**
 
 *Checked for Duplicate `ride_id` records*
 
@@ -152,13 +150,122 @@ SELECT
 FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
 ```
 
-*Checked for Missing Station Names*
+*Validated Ride Durations*
+
+The next cleaning step in the data came in the form of culling bike trips with durations that were of an impossible or impractical length to be considered valid. I decided to cull all trips with the following ride durations:
+1. Ride duration < 0
+2. Ride duration = 0
+3. Ride duration < 1 minute
+4. Ride duration > 18 hours
+
+My reasonings behind the culling criteria are as follows:
+1. Ride durations that are negative are logically impossible and could be the result of a data-recording issue, system maintenance, or a docking sensor issue.
+2. Ride durations that have a duration of zero seconds have thus travelled zero distance and cannot be considered to be valid trips, regardless of the reason.
+3. Ridge durations that are only a few seconds long could be due to system maintenance, a re-docking attempt, or a user undocking a bike and then changing their mind, but either way, they are too short to tell us anything useful about the trip. While these are technically 'trips', they don't tell us anything useful about usage behaviour as they are trips too short to be purposeful.
+4. Ride durations that are longer than 18 hours in duration represent a physical impossibility for most riders, even if they stopped to have breaks along the way. Ride lengths exceeding 18 hours should thus be considered to be either multiple rides, bikes having being removed from their docking stations for maintenance, or possibly bikes that have been stolen.
+
+In order to faciliate the culling process, and also to make the data more human-readable, I added the `ride_duration_mins` column to the dataset, which shows ride duration rounded off to the nearest minute. Being a calculated field, it was created by calculating the difference between the `started_at` and `ended_at` times, dividing by 60, and the rounding the result to the nearest integer. This is the code that I used to achieve this:
+
+```
+CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset` AS
+SELECT 
+  *,
+  -- Calculate duration in seconds, divide by 60, and round to the nearest integer
+  SAFE_CAST(ROUND(TIMESTAMP_DIFF(ended_at, started_at, SECOND) / 60) AS INT64) AS ride_duration_mins
+FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
+```
+
+After engineering the `ride_duration_mins` feature, I performed a quality audit using an anomaly threshold query. This enabled me to quantify non-representative data, ensuring that the final analysis focuses exclusively on valid, intentional trips. This is the code that I used to achieve this:
+
+```
+SELECT
+  COUNTIF(ride_duration_mins < 0) AS negative_duration,
+  COUNTIF(ride_duration_mins = 0) AS zero_duration,
+  COUNTIF(ride_duration_mins < 1) AS less_than_1_minute,
+  COUNTIF(ride_duration_mins > 1080) AS eighteen_plus_hours,
+  COUNTIF(
+    ride_duration_mins < 0 
+    OR ride_duration_mins = 0 
+    OR ride_duration_mins < 1 
+    OR ride_duration_mins > 1080
+  ) AS total_anomalies
+FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
+```
+
+My audit revealed the following:
+
+| Item | Number of Occurences |
+|:---|---:|
+| Ride duration < 0 | 29 |
+| Ride duration = 0 | 115,688 |
+| Ride duration < 1 minute | 115,717 |
+| Ride duration > 18 hours | 6,982 |
+| Total anomalies | 122,609 |
+
+For the purposes of interpretation, it must be noted that the total number of anomalies wass calculated by adding together trips with ride durations less than one minute and longer than 18 hours, and that trips with ride durations less than zero and equal to zero are merely a subset of trips with ride durations less than one minute.
+
+The 122,609 ride duration anomalies represent only 2.09% of our dataset, so I felt confident in culling them as this reduction was statistically insignificant and enhances the reliability of our results. The cull was performed with the following code:
+
+```
+CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_durations_culled` AS
+SELECT *
+FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
+WHERE ride_duration_mins >= 1 
+  AND ride_duration_mins <= 1080;
+```
+
+This produced a new table named 'cyclistic_durations_culled' containing 5,726,059 entries, which I verified the integrity of using a `COUNT(*)` query.
+
+However, as a data validation step, I wanted to check how the removal of these ride duration anomalies were skewing the results, so I performed a check on the datasets before and after culling using variations of this code:
+
+```
+SELECT 
+  AVG(ride_duration_mins) AS average_ride_duration_mins,
+  MIN(ride_duration_mins) AS shortest_ride,
+  MAX(ride_duration_mins) AS longest_ride
+FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
+```
+
+| Item | Before the Cull | After the Cull |
+| :--- | ---: | ---: |
+| Average ride duration | 15.98 minutes | 14.57 minutes |
+| Shortest ride | -55 minutes | 1 minute |
+| Longest ride | 1,575 minutes | 1,080 minutes |
+
+As we can see, the ride duration anomalies were skewing our results to a significant degree, so their removal was justified.
+
+
+
+*Checked for Missing Station Names and/or GPS Coordinates*
+
+As stated earlier, my initial exploration of the data revealed that a significant portion of the dataset contains missing start and end station names. A decision had to be made about how to handle these trips with missing station/coordinate data. I decided that the primary source of location "truth" for each bike trip should be the station names, as bikes need to be physically docked in order for station names to be recorded in the trip records. In the case of missing station names (either start or end), I decided that a prudent approach 
 
 
 
 
 
-*Validated Ride Duration*
+
+
+I ran this query in BigQuery to get the exact figures:
+
+```
+SELECT
+  COUNTIF(start_station_name IS NULL) AS missing_start_station,
+  COUNTIF(end_station_name IS NULL) AS missing_end_station,
+  COUNTIF(start_station_name IS NULL AND end_station_name IS NULL) AS missing_both,
+  COUNTIF(start_station_name IS NULL OR end_station_name IS NULL) AS missing_either
+FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
+```
+The query showed the following:
+Missing Start Station = 1,249,661
+Missing End Station = 1,314,320
+Missing Both Station = 593,702
+Missing Either Station = 1,970,279
+
+
+
+
+
 
 
 
