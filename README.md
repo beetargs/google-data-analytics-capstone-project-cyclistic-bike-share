@@ -236,6 +236,8 @@ As we can see from the table below, my filtering logic successfully isolated the
 
 We have confirmed that these ride duration anomalies were skewing our results to a significant degree and had the potential to bias any potential insights we could gain from the data, so their removal was necessary and justified.
 
+It must be pointed out the negative percentage change in the 'Min ride duration (mins)' statistic is in fact a *positive* improvement of 101.82% relative to the absolute magnitude of the original baseline. Further to this, we already know that it impossible for any ride to have a negative trip duration, as was the case with our uncleaned dataset.
+
 
 
 *Checked for Missing Station Names and/or GPS Coordinates*
