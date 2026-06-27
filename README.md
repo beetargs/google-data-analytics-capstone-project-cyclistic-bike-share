@@ -194,7 +194,7 @@ FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
 
 My audit revealed the following:
 
-| Item | Number of Occurences |
+| Anomaly | Number of Occurences |
 |:---|---:|
 | Ride duration < 0 | 29 |
 | Ride duration = 0 | 115,688 |
@@ -240,7 +240,7 @@ It must be pointed out the negative percentage change in the 'Min ride duration 
 
 *Checked for Missing Station Names and/or GPS Coordinates*
 
-As stated earlier, my initial exploration of the monthly datasets revealed that a significant portion of the datasets contains missing start and end station names, as well as missing GPS coordinate data for bike trips, so this had to be investigated in detail. First, I checked how many bike trip entries lack station names, so I ran this query in BigQuery to get the exact figures:
+As stated earlier, my initial exploration of the monthly datasets revealed that a significant portion of the datasets contains missing `start_station_name` and `end_station_name` data, as well as missing GPS coordinate data for bike trips, so this had to be investigated in detail. First, I checked how many bike trip entries lack station names, so I ran this query in BigQuery to get the exact figures:
 
 ```
 SELECT
@@ -255,10 +255,10 @@ The query showed the following:
 
 | Anomaly | Number of Occurences |
 | :--- | ---: |
-| Missing Start Station | 1,249,661 |
-| Missing End Station | 1,314,320 |
-| Missing Both Stations | 593,702 |
-| Missing Either Station | 1,970,279 |
+| Missing `start_station_name` | 1,249,661 |
+| Missing `end_station_name` | 1,314,320 |
+| Missing `start_station_name` and `end_station_name` | 593,702 |
+| Missing `start_station_name` or `end_station_name` | 1,970,279 |
 
 As we are told in the project brief, Cyclistic's business model is station-based and uses fixed docking systems located at each station from which a user must remove a bike for use and then either return it to the same station or any other station in the network. It is thus a fair assumption that the primary source of 'location truth' for each bike trip should be the station names, as bikes need to be physically docked, or at the very least be present in the GPS-ring-fenced station locations, in order for station names to be recorded in the trip records, assuming that no technical glitch or data collection error occurred.
 
@@ -266,25 +266,18 @@ However, as our query revealed, 1,970,279 trips out of our current dataset of 5,
 
 A high frequency of missing station names could suggest a systemic data collection issue, or possible non-compliance with docking protocols, but the assumption could not be made that these trips with missing data were automatically invalid. To maintain the statistical integrity of the analysis, I opted to retain records with missing station names that possessed valid GPS coordinates, as valid GPS coordinates provide sufficient confirmation of point-to-point transit. This decision ensured the analysis remained representative of the entire network’s activity rather than only a subset of perfectly logged records.
 
-Before I could perform coordinate-based imputation to populate the fields with missing station names, I needed to first devise a decision matrix to decide which records should be retained (some requiring imputation) and which should be culled:
+Before I could perform coordinate-based imputation to populate the fields with missing station names, I needed to first devise a decision matrix to decide which records should be retained (some requiring imputation) and which should be removed:
 
 | Record Status | Criteria | Action | Logic |
 | :---     | :---     | :---   | :---  |
 | Complete | Both `start_station_name` and `end_station_name` values exist for the record, although GPS coordinates may or may not be available. | Retain record. | Compliant with the station-based business model. GPS coordinate data not required. |
-| Recoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but GPS coordinates are available in lieu of the missing data and match the coordinates of a known station. | Impute station name(s) and retain record. | Sufficient data exists to impute station name(s) from available GPS coordinate data. |
-| Unrecoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but insufficient GPS coordinate data available to impute station name matches to complete the record. | Remove record. | Insufficient data available to impute station name(s) to complete the record. |
+| Recoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but GPS coordinates are available in lieu of the missing data and matches the coordinates of a known station within a radius of 100m. | Impute station name(s) and retain record. | Sufficient data exists to impute station name(s) from available GPS coordinate data. |
+| Unrecoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but insufficient GPS coordinate data available to impute station name matches to complete the record, or there is GPS coordinate data available, but it does not map to known station locations within a radius of 100m. | Remove record. | Insufficient data available to impute station name(s) to complete the record. |
 
-
-
-
-
-
-
-
-Possible reasons why a trip might have missing station names:
-
-
-Possible reasons why a trip might have missing GPS coordinate data:
+For the purposes of my geospatial matching, a radius of 100m of known station coordinates was used as the spatial tolerance theshold to determine valid matches. This decision was made for the following reasons:
+1. It is the optimal balance between precision (matching to the correct station) and recall (recovering as much data as possible).
+2. A larger radius could not be used as there might be overlap between neigbouring stations.
+3. A smaller radius was deemed not robust enough due to the phenomena of 'GPS drift', 'urban canyoning' and 'GPS sensor noise', which can result in GPS coordinates being recorded that are far from the true location of the bike.
 
 
 
