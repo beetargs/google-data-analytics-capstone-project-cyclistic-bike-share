@@ -275,9 +275,9 @@ Before I could perform coordinate-based imputation to populate the fields with m
 | Unrecoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but insufficient GPS coordinate data available to impute station name matches to complete the record, or there is GPS coordinate data available, but it does not map to known station locations within a radius of 100m. | Remove record. | Insufficient data available to impute station name(s) to complete the record. |
 
 For the purposes of my geospatial matching, a radius of 100m of known station coordinates was used as the spatial tolerance theshold to determine valid matches. This decision was made for the following reasons:
-1. It is the optimal balance between precision (matching to the correct station) and recall (recovering as much data as possible).
+1. It is the optimal balance between precision (matching to the correct station) and recall (recovering as much data as possible). The capture zone needed to be big enough to map trips to their nearest station, but small enough to eliminate the risk of false mapping.
 2. A larger radius could not be used as there might be overlap between neigbouring stations.
-3. A smaller radius was deemed not robust enough due to the phenomena of 'GPS drift', 'urban canyoning' and 'GPS sensor noise', which can result in GPS coordinates being recorded that are far from the true location of the bike.
+3. A smaller radius was deemed not robust enough due to the phenomena of 'GPS drift', 'urban canyoning' and 'GPS sensor noise', which can result in GPS coordinates being recorded that are far from the true location of the bike. A sufficient proximity buffer was required.
 
 
 
