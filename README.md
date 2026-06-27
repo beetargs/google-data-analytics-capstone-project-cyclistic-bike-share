@@ -236,15 +236,11 @@ As we can see from the table below, my filtering logic successfully isolated the
 
 We have confirmed that these ride duration anomalies were skewing our results to a significant degree and had the potential to bias any potential insights we could gain from the data, so their removal was necessary and justified.
 
-It must be pointed out the negative percentage change in the 'Min ride duration (mins)' statistic is in fact a *positive* improvement of 101.82% relative to the absolute magnitude of the original baseline. Further to this, we already know that it impossible for any ride to have a negative trip duration, as was the case with our uncleaned dataset.
-
-
+It must be pointed out the negative percentage change in the 'Min ride duration (mins)' statistic is in fact a *positive* improvement of 101.82% relative to the absolute magnitude of the original baseline. The number is negative because of the instances of logically impossible negative ride durations present in the dataset.
 
 *Checked for Missing Station Names and/or GPS Coordinates*
 
-As stated earlier, my initial exploration of the data revealed that a significant portion of the dataset contains missing start and end station names. A decision had to be made about how to handle these trips with missing station/coordinate data. I decided that the primary source of location "truth" for each bike trip should be the station names, as bikes need to be physically docked in order for station names to be recorded in the trip records. In the case of missing station names (either start or end), I decided that a prudent approach 
-
-I ran this query in BigQuery to get the exact figures:
+As stated earlier, my initial exploration of the monthly datasets revealed that a significant portion of the datasets contains missing start and end station names, as well as missing GPS coordinate data for bike trips, so this had to be investigated in detail. First, I checked how many bike trip entries lack station names, so I ran this query in BigQuery to get the exact figures:
 
 ```
 SELECT
@@ -254,6 +250,7 @@ SELECT
   COUNTIF(start_station_name IS NULL OR end_station_name IS NULL) AS missing_either
 FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
 ```
+
 The query showed the following:
 
 | Anomaly | Number of Occurences |
@@ -262,6 +259,35 @@ The query showed the following:
 | Missing End Station | 1,314,320 |
 | Missing Both Stations | 593,702 |
 | Missing Either Station | 1,970,279 |
+
+As we are told in the project brief, Cyclistic's business model is station-based and uses fixed docking systems located at each station from which a user must remove a bike for use and then either return it to the same station or any other station in the network. It is thus a fair assumption that the primary source of 'location truth' for each bike trip should be the station names, as bikes need to be physically docked, or at the very least be present in the GPS-ring-fenced station locations, in order for station names to be recorded in the trip records, assuming that no technical glitch or data collection error occurred.
+
+However, as our query revealed, 1,970,279 trips out of our current dataset of 5,726,059 trips are missing either the start or end station names, making these records incomplete and problematic to use for our analysis. These incomplete entries makes up a staggering 34.4% of our dataset and could not simply be removed without leading to catastrophic data losses that could severely skew the analysis, destroy statistical power, and introduce significant selection bias. A decision had to be made about how to handle these trips with missing station names.
+
+A high frequency of missing station names could suggest a systemic data collection issue, or possible non-compliance with docking protocols, but the assumption could not be made that these trips with missing data were automatically invalid. To maintain the statistical integrity of the analysis, I opted to retain records with missing station names that possessed valid GPS coordinates, as valid GPS coordinates provide sufficient confirmation of point-to-point transit. This decision ensured the analysis remained representative of the entire network’s activity rather than only a subset of perfectly logged records.
+
+Before I could perform coordinate-based imputation to populate the fields with missing station names, I needed to first devise a decision matrix to decide which records should be retained (some requiring imputation) and which should be culled:
+
+| Record Status | Criteria | Action | Logic |
+| :---     | :---     | :---   | :---  |
+| Complete | Both `start_station_name` and `end_station_name` values exist for the record, although GPS coordinates may or may not be available. | Retain record. | Compliant with the station-based business model. GPS coordinate data not required. |
+| Recoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but GPS coordinates are available in lieu of the missing data and match the coordinates of a known station. | Impute station name(s) and retain record. | Sufficient data exists to impute station name(s) from available GPS coordinate data. |
+| Unrecoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but insufficient GPS coordinate data available to impute station name matches to complete the record. | Remove record. | Insufficient data available to impute station name(s) to complete the record. |
+
+
+
+
+
+
+
+
+Possible reasons why a trip might have missing station names:
+
+
+Possible reasons why a trip might have missing GPS coordinate data:
+
+
+
 
 
 **Avoiding Selection Bias**
