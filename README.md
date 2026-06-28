@@ -1,9 +1,9 @@
 # Google Data Analytics Capstone Project: Cyclistic Bike-Share
 
 ## Introduction
-In this case study, I perform the work of a data analyst working for a fictional company, Cyclistic, which is a succesful bike-sharing company based in Chicago and which was started in 2016. They have a fleet of more than 5,000 bikes and 600 docking stations dotted around the city. With this large number of bikes and docking stations, users can take a bike from their starting station and return it to any other station in the network, making it incredibly easy and convenient.
+In this case study, I perform the work of a data analyst working for a fictional company, Cyclistic, which is a succesful bike-sharing company based in Chicago and which was started in 2016. In the brief, we are told that they have a fleet of more than 5,000 bikes and 600 docking stations dotted around the city. With this large number of bikes and docking stations, users can take a bike from their starting station and return it to any other station in the network, making it incredibly easy and convenient.
 
-Their offering is unique in that, apart from traditional two-wheel bikes, they also offer reclining bikes, hand tricycles, and cargo bikes, making bike-share more inclusive to people with disabilities and riders who can’t use a standard two-wheeled bike. The majority of riders opt for traditional bikes; about 8% of riders use the assistive options. Cyclistic users are more likely to ride for leisure, but about 30% use the bikes to commute to work each day.
+Furthermore, we are told that their offering is unique in that, apart from traditional two-wheel bikes, they also offer reclining bikes, hand tricycles, and cargo bikes, making bike-share more inclusive to people with disabilities and riders who can’t use a standard two-wheeled bike. The majority of riders opt for traditional bikes; about 8% of riders use the assistive options. Cyclistic users are more likely to ride for leisure, but about 30% use the bikes to commute to work each day.
 
 They have two types of customers: **casual riders** who purchase single-ride or full-day passes, and **members** who purchase annual memberships. Cyclistic’s finance analysts have concluded that **annual members are much more profitable than casual riders**, and the company's marketing director believes that the company's future success depends on **maximizing the number of annual memberships**. Therefore, my team and I have been tasked with understanding how casual riders and annual members use Cyclistic bikes differently. **Using the insights that we gain, our team will formulate a new marketing strategy to convert casual riders into annual members**.
 
@@ -274,10 +274,70 @@ Before I could perform coordinate-based imputation to populate the fields with m
 | Recoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but GPS coordinates are available in lieu of the missing data and matches the coordinates of a known station within a radius of 100m. | Impute station name(s) and retain record. | Sufficient data exists to impute station name(s) from available GPS coordinate data. |
 | Unrecoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but insufficient GPS coordinate data available to impute station name matches to complete the record, or there is GPS coordinate data available, but it does not map to known station locations within a radius of 100m. | Remove record. | Insufficient data available to impute station name(s) to complete the record. |
 
-For the purposes of my geospatial matching, a radius of 100m of known station coordinates was used as the spatial tolerance theshold to determine valid matches. This decision was made for the following reasons:
+For the purposes of geospatial matching, a radius of 100m of known station coordinates was used as the spatial tolerance theshold to determine valid matches. This decision was made for the following reasons:
 1. It is the optimal balance between precision (matching to the correct station) and recall (recovering as much data as possible). The capture zone needed to be big enough to map trips to their nearest station, but small enough to eliminate the risk of false mapping.
-2. A larger radius could not be used as there might be overlap between neigbouring stations.
-3. A smaller radius was deemed not robust enough due to the phenomena of 'GPS drift', 'urban canyoning' and 'GPS sensor noise', which can result in GPS coordinates being recorded that are far from the true location of the bike. A sufficient proximity buffer was required.
+2. From a geographic point of view, stations do not exist as a single geographic point with only one set of fixed GPS coordinates, but rather as a range as they occupy lateral space, hence the capture zone is most efficiently defined as a radius rather than a fixed coordinate.
+3. A larger radius could not be used as there might be overlap between neigbouring stations.
+4. A smaller radius was deemed not robust enough due to the phenomena of 'GPS drift', 'urban canyoning' and 'GPS sensor noise', which can result in GPS coordinates being recorded that are far from the true location of the bike. A sufficient proximity buffer was required.
+
+Before I could proceed with any further data cleaning and transformation, I first had to create a separate table called `station_data` that contains a list of all stations in the bike network, as well as GPS coordinates for each of them. The table also has a column called 'total_interactions' which will be a useful metric when visualizing this data in Tableau. This table would be used as the souce of location data for each station, as well as an indicator of station popularity. This was done by extracting all unique station names in our dataset that also had corresponding GPS coordinates, and then matching each station to a set of GPS coordinates. As there are multiple instances of GPS coordinate discrepancies in the dataset for the same station, I aggregated the longitude and latitude data for each station and used the averages as the GPS coordinates for each station respectively. In order to achieve this, I ran the following query in BigQuery:
+
+```
+CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.station_data` AS
+WITH all_stations AS (
+  SELECT start_station_name AS name, start_lat AS lat, start_lng AS lng FROM `course-493609.cyclistic_capstone_project.cyclistic_durations_culled`
+  UNION ALL
+  SELECT end_station_name, end_lat, end_lng FROM `course-493609.cyclistic_capstone_project.cyclistic_durations_culled`
+)
+SELECT
+  name AS station_name,
+  AVG(lat) AS avg_lat,
+  AVG(lng) AS avg_lng,
+  COUNT(*) AS total_interactions
+FROM all_stations
+WHERE name IS NOT NULL
+GROUP BY name;
+```
+
+A visual inspection of the resultant table revealed an interesting anomaly that was not mentioned to us in the brief: Apart from the the station names that we expected, there was another type of station name data that started with the prefix 'Public Rack'. I investigated the extent of this anomaly by running the following query:
+
+```
+SELECT
+  CASE 
+    WHEN station_name LIKE '%Public Rack%' THEN 'Public Rack'
+    ELSE 'Official Station'
+  END AS infrastructure_type,
+  COUNT(*) AS distinct_entries,
+  SUM(total_interactions) AS total_interactions
+FROM `course-493609.cyclistic_capstone_project.station_data`
+GROUP BY 1;
+```
+
+The results were interesting:
+
+| Infrastructure Type | Distinct Entries | Total Interactions |
+| :---                | ---:             | ---:               |
+| Public Rack         | 720 | 47,549 |
+| Official Station    | 1250 | 9,006,136 |
+
+First of all, we learnt that there were in fact double the number of stations in the bike network than we had been told in the brief. This is most likely due to the network having being expanded as time has gone by, but the brief not having been updated. Secondly, even though we discovered that there are 720 public racks used in the network, they comprise only 0.53% of total bike trip interactions, which is not statistically significant. In the spirit of keeping with the brief, i.e. that the business model is a station-based bike sharing network, I decided to create a new table called `station_data_clean` that contains only official stations and not public racks, and also created a new table called `cyclistic_racks_culled` dataset that had either a start or end station being a public rack:
+
+```
+CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.station_data_clean` AS
+SELECT *
+FROM `course-493609.cyclistic_capstone_project.station_data`
+WHERE station_name NOT LIKE '%Public Rack%';
+```
+and
+
+```
+CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_racks_culled` AS
+SELECT *
+FROM `course-493609.cyclistic_capstone_project.cyclistic_durations_culled`
+WHERE (start_station_name NOT LIKE '%Public Rack%' OR start_station_name IS NULL)
+  AND (end_station_name NOT LIKE '%Public Rack%' OR end_station_name IS NULL);
+```
+The resultant `station_data_clean` table now contains only the `cyclistic_racks_culled` table now contains 5,680,864 rows of bike trip data.
 
 
 
