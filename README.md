@@ -324,114 +324,30 @@ WHERE start_lat IS NOT NULL
 
 A new table called `cyclistic_gps_complete` was created and I used a `COUNT(*)` query to verify that the 290 records with missing GPS coordinate data were removed.
 
-At this point, it became clear to me that a decision needed to be made on what my source of 'location truth' should be for these bike trips. I could not use start and end station names solely as roughly one third of the records are missing this complete data. Although the brief tells us that Cyclistic's business model is station-to-station, the data was telling me otherwise. My earlier inspection of the dataset revealed an interesting anomaly that was not mentioned to us in the brief: apart from the station names that we expected, there was another type of station name data that started with the prefix 'Public Rack'. I investigated the extent of these entries by running the following query:
+At this point, it became clear to me that a decision needed to be made on what my source of location truth should be for these bike trips. I could not use start and end station names solely as a third of the records are missing this complete data. Although the brief tells us that Cyclistic's business model is station-to-station, the data told another story. My earlier inspection of the dataset revealed something unexpected that was not mentioned in the brief: apart from the station names that we expected, there was another type of station name data that started with the prefix 'Public Rack'. I investigated the extent of these entries by running the following query:
 
 ```
-
-```
-
-The results were interesting:
-
-| Infrastructure Type | Distinct Entries | Total Interactions |
-| :---                | ---:             | ---:               |
-| Public Rack         | 720 | 47,549 |
-| Official Station    | 1250 | 9,006,136 |
-
-First of all, we learnt that there were in fact double the number of stations in the bike network than we had been told about in the brief. This is most likely due to the network having being expanded as time has gone by, but the brief not having been updated. Secondly, even though we discovered that there are 720 public racks used in the network, they comprise only 0.53% of total bike trip interactions, which is not statistically significant. In the spirit of keeping with the brief, i.e. that the business model is a station-based bike sharing network, I created a new station data table called `station_data_clean` that contains a list of only official stations (public racks removed), and also created a new master table called `cyclistic_racks_culled` that is devoid of all entries containing public racks:
-
-
-
-
-
-To maintain the statistical integrity of the analysis, I opted to retain records with missing station names that possessed valid GPS coordinates, as valid GPS coordinates provide sufficient confirmation of point-to-point transit. This decision ensured the analysis remained representative of the entire network’s activity rather than only a subset of perfectly logged records.
-
-Before I could perform coordinate-based imputation to populate the fields with missing station names, I needed to first devise a decision matrix to decide which records should be retained (some requiring imputation) and which should be removed:
-
-| Record Status | Criteria | Action | Logic |
-| :---     | :---     | :---   | :---  |
-| Complete | Both `start_station_name` and `end_station_name` values exist for the record, although GPS coordinates may or may not be available. | Retain record. | Compliant with the station-based business model. GPS coordinate data not required. |
-| Recoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but GPS coordinates are available in lieu of the missing data and matches the coordinates of a known station within a radius of 75m. | Impute station name(s) and retain record. | Sufficient data exists to impute station name(s) from available GPS coordinate data. |
-| Unrecoverable | Either `start_station_name` and/or `end_station_name` missing for the record, but insufficient GPS coordinate data available to impute station name matches to complete the record, or there is GPS coordinate data available, but it does not map to known station locations within a radius of 75m. | Remove record. | Insufficient data available to impute station name(s) to complete the record. |
-
-For the purposes of geospatial matching, a radius of 75m of known station coordinates was used as the spatial tolerance theshold to determine valid matches. This decision was made for the following reasons:
-1. It is the optimal balance between precision (matching to the correct station) and recall (recovering as much data as possible). The capture zone needed to be big enough to map trips to their nearest station, but small enough to eliminate the risk of false mapping.
-2. From a geographic point of view, stations do not exist as a single geographic point with only one set of fixed GPS coordinates, but rather as a range as they occupy lateral space, hence the capture zone is most efficiently defined as a radius rather than a fixed coordinate.
-3. A larger radius could not be used as there might be overlap between neigbouring stations.
-4. A smaller radius was deemed not robust enough due to the phenomena of 'GPS drift', 'urban canyoning' and 'GPS sensor noise', which can result in GPS coordinates being recorded that are far from the true location of the bike. A sufficient proximity buffer was required.
-
-Before I could proceed with any further data cleaning and transformation, I first had to create a separate table called `station_data` that contains a list of all stations in the bike network, as well as GPS coordinates for each of them. The table also has a column called 'total_interactions' which will be a useful metric when visualizing this data in Tableau. This table would be used as the souce of location data for each station, as well as an indicator of station popularity. This was done by extracting all unique station names in our dataset that also had corresponding GPS coordinates, and then matching each station to a set of GPS coordinates. As there are multiple instances of GPS coordinate discrepancies in the dataset for the same station, I aggregated the longitude and latitude data for each station and used the averages as the GPS coordinates for each station respectively. In order to achieve this, I ran the following query in BigQuery:
-
-```
-CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.station_data` AS
-WITH all_stations AS (
-  SELECT start_station_name AS name, start_lat AS lat, start_lng AS lng FROM `course-493609.cyclistic_capstone_project.cyclistic_durations_culled`
-  UNION ALL
-  SELECT end_station_name, end_lat, end_lng FROM `course-493609.cyclistic_capstone_project.cyclistic_durations_culled`
-)
 SELECT
-  name AS station_name,
-  AVG(lat) AS avg_lat,
-  AVG(lng) AS avg_lng,
-  COUNT(*) AS total_interactions
-FROM all_stations
-WHERE name IS NOT NULL
-GROUP BY name;
+  COUNT(*) AS total_public_rack_trips
+FROM `course-493609.cyclistic_capstone_project.cyclistic_gps_complete`
+WHERE start_station_name LIKE '%Public Rack%' 
+   OR end_station_name LIKE '%Public Rack%';
 ```
 
+The results were that 45,195 of the trips (0.79%) either started or ended at a public rack rather than an official station. This is a tiny percentage and statistically insignificant to my analysis, but it revealed that Cyclistic's bike-share network has evolved and now includes docking points that lie outside of the official station network. This is most likely due to the network having being expanded to include these public racks as time has gone by, but the brief not having been updated, or because it was an omission error when the brief was drafted. As these records constitute valid trips by the virtue of them having a start and end point, I decided to retain these records in the dataset.
+
+Considering that 32.7% of the dataset contains missing station names, yet 100% of the updated dataset contains complete GPS coordinate data, I decided to shift my approach and use solely GPS coordinate data as the source of location truth for each bike trip as valid GPS coordinates provide sufficient confirmation of point-to-point transit. This decision ensured the analysis remained representative of the entire network’s activity rather than only a subset of perfectly logged records.
+
+The alternative that I had to the GPS-coordinate-only approach was to use geospatial imputation to impute the missing station names using the available GPS coordinates, but this approach was not chosen due to the following limitations:
+1. Stations do not exist as a single fixed GPS coordinate point as they occupy lateral space, and without knowing their boundary GPS coordinates that define them (a perfectly square station would require four sets of coordinates to define its location accurately), it is very difficult to perform this kind of imputation.
+2. Without knowing the exact boundary GPS coordinates for each station, the easiest viable approach would be to define the station location as a single fixed GPS coordinate and then use a circular radius to define the capture zone, matching the available GPS coordinates to the nearest known station.
+3. However, a capture radius that is too small would exclude stations, and one too large would capture more than one station due to overlap, resulting in null or false mappings.
+
+Even though I decided to use GPS coordinate data as the only source of location truth for these bike trip records, it is itself subject to the following limitations:
+1. Due to phenomena such as 'GPS drift', 'urban canyoning' and 'GPS sensor noise', which can result in GPS coordinates being recorded that are not the exact true location of the bike.
+2. 
 
 
-```
-CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.station_data_clean` AS
-SELECT *
-FROM `course-493609.cyclistic_capstone_project.station_data`
-WHERE station_name NOT LIKE '%Public Rack%';
-```
-and
-
-```
-CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_racks_culled` AS
-SELECT *
-FROM `course-493609.cyclistic_capstone_project.cyclistic_durations_culled`
-WHERE (start_station_name NOT LIKE '%Public Rack%' OR start_station_name IS NULL)
-  AND (end_station_name NOT LIKE '%Public Rack%' OR end_station_name IS NULL);
-```
-The next step in the geospatial data cleaning process was to determine how many bike trip records were 'Complete', 'Recoverable', or 'Unrecoverable' according to the criteria listed in the decision matrix table above:
-
-```
-WITH CategorizedData AS (
-  SELECT
-    *,
-    CASE
-      -- Category 1: Complete (Both names exist)
-      WHEN start_station_name IS NOT NULL AND end_station_name IS NOT NULL THEN 'Complete'
-      
-      -- Category 2: Recoverable (Missing at least one name, but HAS GPS for both points)
-      -- Note: Assuming GPS columns are named start_lat/start_lng and end_lat/end_lng
-      WHEN (start_station_name IS NULL OR end_station_name IS NULL)
-           AND start_lat IS NOT NULL AND start_lng IS NOT NULL 
-           AND end_lat IS NOT NULL AND end_lng IS NOT NULL THEN 'Recoverable'
-      
-      -- Category 3: Unrecoverable (Missing name AND missing GPS coordinates)
-      ELSE 'Unrecoverable'
-    END AS record_status
-  FROM `course-493609.cyclistic_capstone_project.cyclistic_racks_culled`
-),
-Stats AS (
-  SELECT
-    record_status,
-    COUNT(*) AS count
-  FROM CategorizedData
-  GROUP BY record_status
-),
-Totals AS (
-  SELECT SUM(count) AS total_rows FROM Stats
-)
-SELECT
-  s.record_status,
-  s.count,
-  ROUND(SAFE_DIVIDE(s.count, t.total_rows) * 100, 4) AS percentage
-FROM Stats s, Totals t;
-```
 
 | Record Status | Count | Percentage |
 | :---          | ---:  | ---:       |
