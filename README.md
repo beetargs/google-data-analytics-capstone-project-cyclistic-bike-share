@@ -334,7 +334,7 @@ WHERE start_station_name LIKE '%Public Rack%'
    OR end_station_name LIKE '%Public Rack%';
 ```
 
-The results were that 45,195 of the trips (0.79%) either started or ended at a public rack rather than an official station. This is a tiny percentage and statistically insignificant to my analysis, but it revealed that Cyclistic's bike-share network has evolved and now includes docking points that lie outside of the official station network. This is most likely due to the network having being expanded to include these public racks as time has gone by, but the brief not having been updated, or because it was an omission error when the brief was drafted. As these records constitute valid trips by the virtue of them having a start and end point, I decided to retain these records in the dataset.
+The results were that 45,195 of the trips (0.79%) either started or ended at a public rack rather than an official station. This is a tiny percentage and statistically insignificant to my analysis, but it revealed that Cyclistic's bike-share network has evolved and now includes docking points that lie outside of the official station network. This is most likely due to the network having being expanded to include these public racks as time has gone by, but the brief not having been updated, or because it was an error of omission when the brief was drafted. As these records constitute valid trips by the virtue of them having a start and end point, I decided to retain these records in the dataset.
 
 Considering that 32.7% of the dataset contains missing station names, yet 100% of the updated dataset contains complete GPS coordinate data, I decided to shift my approach and use solely GPS coordinate data as the source of location truth for each bike trip as valid GPS coordinates provide sufficient confirmation of point-to-point transit. This decision ensured the analysis remained representative of the entire network’s activity rather than only a subset of perfectly logged records.
 
@@ -343,95 +343,65 @@ The alternative that I had to the GPS-coordinate-only approach was to use geospa
 2. Without knowing the exact boundary GPS coordinates for each station, the easiest viable approach would be to define the station location as a single fixed GPS coordinate and then use a circular radius to define the capture zone, matching the available GPS coordinates to the nearest known station.
 3. However, a capture radius that is too small would exclude stations, and one too large would capture more than one station due to overlap, resulting in null or false mappings.
 
-Even though I decided to use GPS coordinate data as the only source of location truth for these bike trip records, it is itself subject to the following limitations:
+Even though I decided to use GPS coordinate data as the only source of location truth for these bike trip records, it was a significant compromise as GPS geolocation is itself subject to the following limitations that have bearing on our analysis:
 1. Due to phenomena such as 'GPS drift', 'urban canyoning' and 'GPS sensor noise', which can result in GPS coordinates being recorded that are not the exact true location of the bike.
-2. 
+2. Bad weather can interfere with GPS satellite signals and return false values.
+3. GPS sensors can themselves be faulty, require calibration, and thus provide inaccurate location information.
 
+In a perfect world, we would have station name data for every record in our dataset, but as we don't, this compromise of using only GPS coordinate data was reached. However, assuming that the GPS coordinate data that we have in our dataset is accurate enough for purposes of this analysis, it has the benefit of more accurately showing us true bike trip behaviour of users as it shows us exactly where they pick up and the bike and drop it off, regardless of whether it was at an offical station, public rack, or on the side of the road.
 
+*Checked for Null Values in the `member_casual` Column*
 
-| Record Status | Count | Percentage |
-| :---          | ---:  | ---:       |
-| Complete | 3,822,980 | 67.295% |
-| Recoverable | 1,857,675 | 32.701% |
-| Unrecoverable | 209 | 0.004% |
-
-The results of the query show that the 'Unrecoverable' bike trip records make up a miniscule and statistically insignificant portion of our dataset and can be safely removed. However, the high percentage of 'Recoverable' records suggests that the primary challenge was not a lack of location data, but rather a misalignment between GPS tracking and the secondary station-naming lookup tables. My approach of bridging these two data sources via spatial imputation corrects for this systemic disconnect, resulting in a dataset that more accurately reflects true bike trip behaviour than the original incomplete CSV logs.
-
-Next, I created a new master table called `cyclistic_mapped` that had the 'Unrecoverable' records removed from it, and attempted to populate the missing station names with imputed spatial data using the 75m capture radius of know station coordinates:
+As the stated goal of this analysis is to determine the difference in bike use behaviour between members and casual riders, I checked to for any null values in the `member_casual` field. If null values exists, then those records need to be removed from the dataset as no inferences can be made without knowing the membership status of a user:
 
 ```
-CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_mapped` AS
-WITH MainData AS (
-  SELECT *
-  FROM `course-493609.cyclistic_capstone_project.cyclistic_racks_culled`
-  WHERE (start_station_name IS NOT NULL OR (start_lat IS NOT NULL AND start_lng IS NOT NULL))
-    AND (end_station_name IS NOT NULL OR (end_lat IS NOT NULL AND end_lng IS NOT NULL))
-),
--- Map Start Stations
-StartMapped AS (
-  SELECT m.*, s.station_name AS imputed_start_name
-  FROM MainData m
-  LEFT JOIN `course-493609.cyclistic_capstone_project.station_data_clean` s
-    ON ABS(m.start_lat - s.avg_lat) < 0.000674
-    AND ABS(m.start_lng - s.avg_lng) < 0.000674
-  QUALIFY ROrtW_NUMBER() OVER(PARTITION BY m.ride_id ORDER BY (POWER(m.start_lat - s.avg_lat, 2) + POWER(m.start_lng - s.avg_lng, 2))) = 1
-),
--- Map End Stations
-EndMapped AS (
-  SELECT m.*, s.station_name AS imputed_end_name
-  FROM StaMapped m
-  LEFT JOIN `course-493609.cyclistic_capstone_project.station_data_clean` s
-    ON ABS(m.end_lat - s.avg_lat) < 0.000674
-    AND ABS(m.end_lng - s.avg_lng) < 0.000674
-  QUALIFY ROW_NUMBER() OVER(PARTITION BY m.ride_id ORDER BY (POWER(m.end_lat - s.avg_lat, 2) + POWER(m.end_lng - s.avg_lng, 2))) = 1
-)
-SELECT 
-  * EXCEPT(start_station_name, end_station_name, imputed_start_name, imputed_end_name),
-  COALESCE(start_station_name, imputed_start_name) AS start_station_name,
-  COALESCE(end_station_name, imputed_end_name) AS end_station_name
-FROM EndMapped;
+SELECT
+  COUNT(*) AS null_member_casual_count
+FROM `course-493609.cyclistic_capstone_project.cyclistic_gps_complete`
+WHERE member_casual IS NULL;
 ```
-As expected, the new master table, `cyclistic_mapped` contained the correct number of rows, i.e. exactly 209 rows less than the previous `cyclistic_racks_culled` table, but a quick visual inspection revealed a large number of records with missing station name data. I used a `COUNT(*)` query to determine the extent of this: a total of 1,722,698 records lacked station names, representing 30.3% of our dataset. This means that these trips failed in the spatial imputation process. In keeping with the the stated business model as given to us in the brief, I made the decision to exclude these records from my analysis as these trips could not be matched to known station locations. However, a special mention must be made of potential reasons why this matching process failed:
-1. The capture zone radius of 75m might be too small to have successfully captured all known stations.
-2. Users may have abandoned bikes after a trip in a location that does not correspond to a known station, or may be non-compliant with docking and bike-returning procedures.
-3. Cyclistic may have introduced the ability to pick up and drop off bikes in locations that don't correspond to known stations, but failed to inform us of this in the brief.
-4. GPS signal errors, such as GPS drift, poor signal coverage, and urban canyoning, may have resulted in the bikes registering coordinates that are far from their true values.
-5. Bikes may have been moved by Cyclistic staff for repairs or maintenance, or possibly moved to other locations to fulfill stock shortages.
 
-Due to a lack of contextual data, we can only make assumptions about why there are such a large number of trips either had incomplete station data, or could not be mapped to known stations, but I felt it prudent to exclude these records from my analysis. Rather than viewing this as a data quality failure, it is a significant finding in itself and may be highlighting a key operational reality about the Cyclistic network that requires further investigation.
+No null values were found.
+
+*Checked for null values in `started_at` and `ended_at` Columns`
+
+In order to perform a thorough analysis of the data, we need complete timestamp data for when each trip started and ended. I ran the following query to check for null values in these respective fields:
+
+```
+SELECT
+  COUNT(*) AS null_timestamp_count,
+  COUNTIF(started_at IS NULL) AS missing_started_at,
+  COUNTIF(ended_at IS NULL) AS missing_ended_at
+FROM `course-493609.cyclistic_capstone_project.cyclistic_gps_complete`
+WHERE started_at IS NULL 
+   OR ended_at IS NULL;
+```
+
+No null values were found.
+
+*Created New Columns Called `day_of_week` and `month`*
+
+Part of my analysis will involve analyzing usage patterns depending on the day of the week and month of the year that each trip was begun, so these new columns were created to make it easier to perform granular trend analysis of the data. The new columns were created by extracting the information from the timestamps in the `started_at` column, thus transforming the raw timestamp data into actionable insights for understanding seasonal rider behaviour:
+
+```
+CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_final_dataset` AS
+SELECT
+  *,
+  -- Extracting day of week (1 = Sunday, 7 = Saturday)
+  EXTRACT(DAYOFWEEK FROM started_at) AS day_of_week,
+  -- Extracting month (1 = January, 12 = December)
+  EXTRACT(MONTH FROM started_at) AS month
+FROM `course-493609.cyclistic_capstone_project.cyclistic_gps_complete`;
+```
+
+The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity dataset consists of 5,725,850 records. This high 97.9% preservation rate ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning member versus casual rider behavior, and are based on a comprehensive and representative sample of the overall system usage.
 
 
 
 
 
-High-fidelity reference set
 
 
-
-**Avoiding Selection Bias**
-
-
-
-The entire data cleaning process removed XXX records from the dataset, leaving us with a total of XXX records, this representing XX% of the original source data.
-
-
-
-there are 1722698 records missing station names
-
-
-How to frame this in your Capstone
-Do not try to "force" these records to fit. Instead, use these 1,722,698 records to tell a compelling story about Infrastructure Coverage.
-
-Define the "System Gap": You have mathematically proven that the current "fixed-station" infrastructure does not capture 30% of user activity. This is a massive insight for the company—it suggests that 1.7 million trips are either taking place outside of the official docking system or occurring in "grey zones" where docking is difficult.
-
-Comparative Analysis: You now have two distinct populations to compare:
-
-Group A (The Mapped Network): Trips that started/ended at a known station (the "Core Network").
-
-Group B (The Grey Zone): Trips that occur outside of your 75m threshold (the "Service Gaps").
-
-Suggestion: Use the 'Grey Zone' for your Recommendations
-This is where your capstone will stand out from others. Instead of only analyzing the stations that exist, use the GPS coordinates of these 1.7 million "NULL" trips to suggest where new stations should be built.
 
 Heatmap Opportunity: If you create a heatmap of the start/end coordinates of these 1.7 million records, you will likely see "hotspots." These hotspots are exactly where Cyclistic should be installing new docking stations.
 
@@ -444,23 +414,6 @@ The Value Proposition: State: "By analyzing the 1.7 million trips that could not
 
 This approach turns a "missing data" problem into a "growth strategy" solution. It shows the stakeholders that you aren't just a data cleaner—you are a business strategist.
 
-Does this strategy of using the "NULL" data to propose new station locations sound like a strong direction for your final project?
-
-give me bq code to count how many records in the 'cyclistic_durations_culled' dataset lack complete start and end gps coordinates
-
-To determine how many records in your cyclistic_durations_culled dataset are missing critical spatial information (GPS coordinates), you can use a simple COUNT query with a WHERE clause that looks for NULL values.
-
-The SQL Query
-SQL
-SELECT
-  COUNT(*) AS records_missing_spatial_data
-FROM `course-493609.cyclistic_capstone_project.cyclistic_durations_culled`
-WHERE start_lat IS NULL 
-   OR start_lng IS NULL 
-   OR end_lat IS NULL 
-   OR end_lng IS NULL;
-Explanation of the Logic
-OR logic: By using OR between each coordinate field, this query will catch any record that is missing at least one of the four necessary coordinates.
 
 Completeness Check: This is a vital quality control step. If you intend to perform spatial mapping or imputation based on coordinates, any record that fails this check is technically "unrecoverable" for those specific spatial processes.
 
@@ -469,4 +422,4 @@ Since you are documenting your data cleaning process, adding this count to your 
 
 "An initial assessment of spatial data integrity revealed that [X] records were missing coordinate data. These entries were identified as 'Unrecoverable' for the purpose of coordinate-based station mapping, as the absence of latitude or longitude coordinates precluded spatial reconciliation. This assessment step was fundamental in establishing the scope of the subsequent cleaning and imputation phases."
 
-Does this count align with your expectations for the number of incomplete records, or is it significantly higher than you anticipated?
+
