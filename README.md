@@ -1,6 +1,7 @@
 # Google Data Analytics Capstone Project: Cyclistic Bike-Share
 
 ## Introduction
+
 In this case study, I perform the work of a data analyst working for a fictional company, Cyclistic, which is a succesful bike-sharing company based in Chicago and which was started in 2016. In the brief, we are told that they have a fleet of more than 5,000 bikes and 600 docking stations dotted around the city. With this large number of bikes and docking stations, users can take a bike from their starting station and return it to any other station in the network, making it incredibly easy and convenient.
 
 Furthermore, we are told that their offering is unique in that, apart from traditional two-wheel bikes, they also offer reclining bikes, hand tricycles, and cargo bikes, thus making bike-share more inclusive to people with disabilities and riders who can’t use a standard two-wheeled bike. The majority of riders opt for traditional bikes; about 8% of riders use the assistive options. We are also told that Cyclistic users are more likely to ride for leisure, but about 30% use the bikes to commute to work each day.
@@ -16,6 +17,7 @@ In order to conduct my analysis of the data, I will be using Google's data analy
 6. Act
 
 ### Ask
+
 In this phase of the data analysis process, the key aim is to identify the **business task**, which in this case is:  
 
 ***Analyze historical bike trip data for the past 12 months to identify trends in how annual members and casual riders use Cyclistic bikes differently, in order to provide actionable insights for developing a marketing strategy to convert casual riders into annual members.***
@@ -26,7 +28,7 @@ My goal is thus to provide actionable insights for the marketing team by identif
 
 **Data Source**  
 
-In order to complete my data analysis, I made use of Cyclistic's historical trip data to analyze usage trends for the past twelve months which, in this case, was from June 2025 to May 2026. The original dataset can be found [here](https://divvy-tripdata.s3.amazonaws.com/index.html). Although Cyclistic is a fictional company, the data is real data for a company called Divvy Bikes that is based in Chicago. The data has kindly been made available to us for the purposes of these capstone projects by them under this [license](https://divvybikes.com/data-license-agreement).
+In order to complete my data analysis, I made use of Cyclistic's historical trip data to analyze usage trends for the past twelve months which, in this case, was from June 2025 to May 2026. The original dataset can be found [here](https://divvy-tripdata.s3.amazonaws.com/index.html). Although Cyclistic is a fictional company, the data is real data for a company called Divvy Bikes that is based in Chicago. The data has kindly been made available to us by Motivate International Inc. for the purposes of these capstone projects under this [license](https://divvybikes.com/data-license-agreement).
 
 **Data Structure**  
 
@@ -396,7 +398,7 @@ FROM `course-493609.cyclistic_capstone_project.cyclistic_gps_complete`;
 
 *Summary of Data Cleaning and Transformation Activities*
 
-The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity dataset 'cyclistic_final_dataset` consists of 5,725,850 records. This high preservation rate (97.9%) ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning member versus casual rider behavior, and are based on a comprehensive and representative sample of the overall bike-share system usage.
+The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity dataset `cyclistic_final_dataset` consists of 5,725,850 records. This high preservation rate (97.9%) ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning member versus casual rider behavior, and are based on a comprehensive and representative sample of the overall bike-share system usage.
 
 ### Analyze
 
