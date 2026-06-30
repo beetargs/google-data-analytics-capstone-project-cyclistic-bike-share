@@ -394,7 +394,11 @@ SELECT
 FROM `course-493609.cyclistic_capstone_project.cyclistic_gps_complete`;
 ```
 
-The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity dataset consists of 5,725,850 records. This high 97.9% preservation rate ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning member versus casual rider behavior, and are based on a comprehensive and representative sample of the overall system usage.
+*Summary of Data Cleaning and Transformation Activities*
+
+The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity dataset 'cyclistic_final_dataset` consists of 5,725,850 records. This high preservation rate (97.9%) ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning member versus casual rider behavior, and are based on a comprehensive and representative sample of the overall bike-share system usage.
+
+### Analyze
 
 
 
