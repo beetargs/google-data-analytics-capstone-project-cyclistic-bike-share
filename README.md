@@ -1,6 +1,6 @@
 # Google Data Analytics Capstone Project: Cyclistic Bike-Share
 
-![Cyclistic Bike-Share_Logo](images\Cyclistic-Logo.png)
+![Cyclistic Bike-Share_Logo](images/cyclistic_logo.png)
 
 ## Introduction
 
