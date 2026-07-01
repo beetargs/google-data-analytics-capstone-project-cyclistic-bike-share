@@ -1,5 +1,7 @@
 # Google Data Analytics Capstone Project: Cyclistic Bike-Share
 
+![Cyclistic Bike-Share_Logo](images/Cyclistic-Logo.png)
+
 ## Introduction
 
 In this case study, I perform the work of a data analyst working for a fictional company, Cyclistic, which is a succesful bike-sharing company based in Chicago and which was started in 2016. In the brief, we are told that they have a fleet of more than 5,000 bikes and 600 docking stations dotted around the city. With this large number of bikes and docking stations, users can take a bike from their starting station and return it to any other station in the network, making it incredibly easy and convenient.
@@ -395,6 +397,16 @@ SELECT
   EXTRACT(MONTH FROM started_at) AS month
 FROM `course-493609.cyclistic_capstone_project.cyclistic_gps_complete`;
 ```
+
+*Removed Columns Not Needed For My Analysis*
+
+In order to prepare the dataset for the next steps in the process, I removed the following columns that I would not be requiring for my analysis:
+* `start_station_name`
+* `start_station_id`
+* `end_station_name`
+* `end_station_id`
+
+This also helped to reduce the size of the dataset, making it more efficient to process in the next steps.
 
 *Summary of Data Cleaning and Transformation Activities*
 
