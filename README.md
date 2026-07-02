@@ -414,6 +414,24 @@ The data cleaning and transformation phase prioritized data quality without comp
 
 ### Analyze
 
+**Number of Bike Rides By User Type**
+
+IMAGE
+
+In the 12 months of data that was analyzed, Members were the dominant user segment, accounting for 64.44% of bike rides, compared to Casual Riders at 35.56%. While Casual Riders represent over a third of the total ride volume, the membership subscription model is the primary driver of engagement, capturing nearly two-thirds of all trips. This large gap between the two represents the core busines opportunity for Cyclistic, and there is a clear opportunity to investigate conversion strategies aimed at transitioning casual riders into the annual membership program.
+
+**User Type Breakdown by Month**
+
+IMAGE
+
+While the usage of Casual Riders follows a strong seasonal curve peaking mid-year during the warmer months, Members maintain a higher baseline throughout the year, which indicates that their need for transportation is inelastic. The latter is highly suggestive of commuters who rely on Cyclistic for daily trips between home and work and/or transit hubs. Conversely, the usage by Casual Riders appears to be more discretionary in nature, influenced by seasonal factors, such as the weather. Hence, we make the assumption that Casual Riders are predominantly comprised of users whose bike usage is recreation-focused.
+
+
+
+
+
+
+
 
 
 
