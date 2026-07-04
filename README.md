@@ -432,7 +432,7 @@ IMAGE
 
 While the previous breakdown by raw ride counts offered an essential quantitative breakdown of absolute demand, a secondary analysis was required to quantify the behavioral differences between user groups. To move beyond simple ride volume and confirm my suspicions about demand elasticity, I normalized the data to represent the monthly ridership deviation from mean. This visualisation exposes the elasticity profile of each group, showing that Casual Riders exhibit significantly higher volatility (elasticity), with monthly deviations swinging from approximately -85% to +90% relative to their annual mean. Conversely, Members maintain a much tighter range of deviation (approximately -64% to +45%), providing empirical evidence that their demand is more inelastic and resistant to seasonal shifts.
 
-This contrast confirms that while Members provide the stable, essential baseline of the business, Casual Riders are the primary drivers of seasonal capacity fluctuations, making them the ideal target for conversion strategies.
+This qualitative contrast in user behaviour confirms that while Members provide the stable, essential baseline of the business (they are mostly commuters), Casual Riders are the primary drivers of seasonal capacity fluctuations (they are mostly recreational users), making them the ideal target for conversion strategies.
 
 
 
