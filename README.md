@@ -479,7 +479,23 @@ IMAGE
 * Members maintain a consistently stable and shorter average ride duration, regardless of the day of the week. There is a slight increase in trip duration for Member over the weekend, suggesting some recreational bike usage on their part.
 * Again, Casual Riders demonstrate significant variability, with ride durations escalating sharply as the weekend approached, and peaking on the weekend. This weekend-dominant increase confirms a leisure-based intent, where the duration of the ride is extended for recreational exploration rather than functional transportation.
 
-**
+**Usage by Bike Type**
+
+My cleaned dataset `cyclistic_tableau` contains only two type of bikes: 'classic bike' and 'electric bike'. I doubled-checked the original uncleaned dataset `cyclistic_12_months_dataset` to make sure that no bike types were lost from this analysis due to data cleaning - none were. We can speculate that the choice of bike might serve as an indicator of user intent, so to investigate this, I created the following visualization:
+
+IMAGE
+
+* Electric bikes are the most utilized equipment across both user segments, demontrating that both sets of riders value the efficiency and ease provided by electric-assist technology.
+* We can also see that Members utilize electric bikes at the highest volume, reinforcing their profile as utilitatian commuters, as they prioritize the faster, most reliable transport method for their daily work-related trips.
+* While Casual Riders also use electric bikes to a significant degree, their sustained use of classic bikes is consistent with a recreational profile, not constrained the the time pressures of a daily commute.
+
+**Spatial Hotspot Analysis**
+
+As my dataset is huge - more than five million rows - and the only complete spatial infomation we have for each bike trip is GPS coordinates, I had to decided on an efficient way to visualize this data in Tableau. In order to do so, I created a new summary table in BigQuery called `cyclistic_spatial` that applies spatial binning protocols to the GPS coordinate data found in my cleaned dataset. GPS coordinates were rounded off to four decimal places, resulting in a binning accuracy of roughly 11m, which is perfect for providing us with a granular level of information whilst keeping the processing in Tableau fast and efficient.
+
+IMAGE
+
+
 
 
 
