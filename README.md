@@ -400,17 +400,17 @@ FROM `course-493609.cyclistic_capstone_project.cyclistic_gps_complete`;
 
 *Removed Columns Not Needed For My Analysis*
 
-In order to prepare the dataset for the next steps in the process, I removed the following columns that I would not be requiring for my analysis:
+In order to prepare the dataset for the next steps in the process, I removed the following columns that I would not be requiring for my analysis, and created a new table called `cyclistic_tableau`:
 * `start_station_name`
 * `start_station_id`
 * `end_station_name`
 * `end_station_id`
 
-This also helped to reduce the size of the dataset, making it more efficient to process in the next steps.
+This culling process also helped to reduce the size of the dataset, making it more efficient to process in the next steps.
 
 *Summary of Data Cleaning and Transformation Activities*
 
-The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity dataset `cyclistic_final_dataset` consists of 5,725,850 records. This high preservation rate (97.9%) ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning member versus casual rider behavior, and are based on a comprehensive and representative sample of the overall bike-share system usage.
+The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity dataset `cyclistic_tableau` consists of 5,725,850 records. This high preservation rate (97.9%) ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning member versus casual rider behavior, and are based on a comprehensive and representative sample of the overall bike-share system usage.
 
 ### Analyze
 
@@ -431,12 +431,27 @@ IMAGE
 
 **Monthly Ridership Deviation from Mean**
 
+While the previous breakdown by raw ride counts offered an essential quantitative breakdown of absolute demand, a secondary analysis was required to quantify the behavioral differences between user groups. To move beyond simple ride volume and confirm my suspicions about demand elasticity, I normalized the data to represent the monthly ridership deviation from mean.
+
 IMAGE
 
-* While the previous breakdown by raw ride counts offered an essential quantitative breakdown of absolute demand, a secondary analysis was required to quantify the behavioral differences between user groups. To move beyond simple ride volume and confirm my suspicions about demand elasticity, I normalized the data to represent the monthly ridership deviation from mean.
 * This visualisation exposes the elasticity profile of each group, showing that Casual Riders exhibit significantly higher volatility (elasticity), with monthly deviations swinging from approximately -85% to +90% relative to their annual mean.
 * Conversely, Members maintain a much tighter range of deviation (approximately -64% to +45%), providing empirical evidence that their demand is more inelastic and resistant to seasonal shifts.
+* During the peak of winter, we see that Casual Rider all but disappears, whereas Member demand retains a hard floor of activity. The November to March decline thus represents a threshold of feasability for both rider groups.
 * This qualitative contrast in user behaviour confirms that while Members provide the stable, essential baseline of the business (they are mostly commuters), Casual Riders are the primary drivers of seasonal capacity fluctuations (they are mostly recreational users), making them the ideal target for conversion strategies.
+* Even for utlitatrian users, such as commuters, the demand for bike trips is rarely perfectly inelastic. In cities like Chicago, which experiences severe winters, the sharp decline in Member ridership between November and March is driven by environmental constraints that override even the most routine commute, resulting in transport mode substitution. This doesn't invalidate my theory, but rather adds context.
+
+**Day of Week Analysis**
+
+While seasonal analyses give us a broad overview of *why* people ride during different times of the year (i.e. commuter vs recreational), day- and time-of-use analyses give us a better idea of rider intent regardless of the season. We would expect that commuter rides would be more concentrated on the working days (i.e. Monday to Friday), and also on working times (i.e. early mornings and late afternoons).
+
+IMAGE
+
+* As we can see from the chart, Member ridership is heavily concentrated on weekdays, consistent with what we would expect from non-discretionary, utilitarian commuting, where riders rely on Cyclistic for their work commutes.
+* In contrast, Casual Rider volume is lowest during the early workweek and exhibits a surge towards the weekend, peaking on Saturday. This weekend-dominant pattern reinforces the qualitative assessment that Casual Rider usage is primarily driven by recreational, leisure-based motivations rather routine transit needs.
+* This chart confirms that the two user groups operate on fundamentally different temporal schedules.
+
+**Time of Day Analysis**
 
 
 
