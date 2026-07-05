@@ -453,6 +453,33 @@ IMAGE
 
 **Time of Day Analysis**
 
+To finalize the behavioural characterization of Cyclistic users, I performed an hourly trend analysis, visualized in the line chart below. This data provides the clearest temporal distinction between the two user segments:
+
+IMAGE
+
+* As we expected, the line chart shows sharp and distinct peaks around 08h00 and 17h00 in the Members group, which aligns closely with standard Chucago workday schedules. It confirms the utilitarian nature of these trips, i.e. that they are work commutes. This bimodal pattern is strong quantitative evidence that Members rely on Cyclistic's bike-share service as a primary transit method for the workday.
+* Also, as expected,  we see a more unimodal distribution with the Casual Riders group, with a gradual increase in trips that peak in the late afternoon, characteristic of recreational or tourist usage. The absence of a morning rush-hour peak indicates that this segment is not constrained by traitional workplace arrival times, further validating their profile as recreational or leisure-based users.
+* These temporal fingerprints provide proof that the two user segments are not just different in volume, but exhibit two different usage patterns.
+
+**Average Ride Duration by Month**
+
+The visualization below illustrates a clear divergence in ride duration between the two user groups based on the season, providing further empirical evidence of the intent behind rider behaviour:
+
+IMAGE
+
+* Members maintain a stable, lower average ride duration throughout the year, typically around 10 to 12 minutes, which shows their intent to engage in efficient travel. This consistency is indicative of purposeful, utilitarian transit where riders prioritize the most direct route to their destination (work).
+* Casual Riders exhibit significantly longer ride durations, peaking at over 20 minutes during the warm summer months. The higher average duration and increased seasonal volatility confirm a leisure-based usage patterns, where the experience and duration of the ride itself are central to the user's engagement.
+
+**Average Ride Duration by Month**
+
+The line chart below confirms the divergence in ride duration between the two user groups:
+
+IMAGE
+
+* Members maintain a consistently stable and shorter average ride duration, regardless of the day of the week. There is a slight increase in trip duration for Member over the weekend, suggesting some recreational bike usage on their part.
+* Again, Casual Riders demonstrate significant variability, with ride durations escalating sharply as the weekend approached, and peaking on the weekend. This weekend-dominant increase confirms a leisure-based intent, where the duration of the ride is extended for recreational exploration rather than functional transportation.
+
+**
 
 
 
