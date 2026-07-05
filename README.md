@@ -418,21 +418,25 @@ The data cleaning and transformation phase prioritized data quality without comp
 
 IMAGE
 
-In the 12 months of data that were analyzed, Members were the dominant user segment, accounting for 64.44% of bike rides, compared to Casual Riders at 35.56%. While Casual Riders represent over a third of the total ride volume, the membership subscription model is the primary driver of engagement, capturing nearly two-thirds of all trips. This large gap between the two represents the core busines opportunity for Cyclistic, and there is a clear opportunity to investigate conversion strategies aimed at transitioning casual riders into the annual membership program.
+* In the 12 months of data that were analyzed, Members were the dominant user segment, accounting for 64.44% of bike rides, compared to Casual Riders at 35.56%.
+* While Casual Riders represent over a third of the total ride volume, the membership subscription model is the primary driver of engagement, capturing nearly two-thirds of all trips.
+* This large gap between the two represents the core busines opportunity for Cyclistic, and there is a clear opportunity to investigate conversion strategies aimed at transitioning casual riders into the annual membership program.
 
 **User Type Breakdown by Month**
 
 IMAGE
 
-While the usage of Casual Riders follows a strong seasonal curve peaking mid-year during the warmer months, Members maintain a higher baseline throughout the year, with a smaller peak during the warmer summer months, indicating that their need for transportation is relatively inelastic. This demand inelasticity strongly suggests a commuter demographic utilizing the service for daily, recurring trips between home, work, or transit hubs. Conversely, the usage by Casual Riders appears to be more discretionary in nature, influenced by seasonal factors, such as the weather. Hence, we make the assumption that Casual Riders are predominantly comprised of users whose bike usage is recreation-focused.
+* While the usage of Casual Riders follows a strong seasonal curve peaking mid-year during the warmer months, Members maintain a higher baseline throughout the year, with a smaller peak during the warmer summer months, indicating that their need for transportation is relatively inelastic. This demand inelasticity strongly suggests usage that is utilitatian in nature, and is indicative of a commuter demographic utilizing the service for daily, recurring trips between home, work, or transit hubs.
+* Conversely, the usage by Casual Riders appears to be more discretionary in nature, influenced by seasonal factors, such as the weather. Hence, we make the assumption that Casual Riders are predominantly comprised of users whose bike usage is recreation-focused.
 
 **Monthly Ridership Deviation from Mean**
 
 IMAGE
 
-While the previous breakdown by raw ride counts offered an essential quantitative breakdown of absolute demand, a secondary analysis was required to quantify the behavioral differences between user groups. To move beyond simple ride volume and confirm my suspicions about demand elasticity, I normalized the data to represent the monthly ridership deviation from mean. This visualisation exposes the elasticity profile of each group, showing that Casual Riders exhibit significantly higher volatility (elasticity), with monthly deviations swinging from approximately -85% to +90% relative to their annual mean. Conversely, Members maintain a much tighter range of deviation (approximately -64% to +45%), providing empirical evidence that their demand is more inelastic and resistant to seasonal shifts.
-
-This qualitative contrast in user behaviour confirms that while Members provide the stable, essential baseline of the business (they are mostly commuters), Casual Riders are the primary drivers of seasonal capacity fluctuations (they are mostly recreational users), making them the ideal target for conversion strategies.
+* While the previous breakdown by raw ride counts offered an essential quantitative breakdown of absolute demand, a secondary analysis was required to quantify the behavioral differences between user groups. To move beyond simple ride volume and confirm my suspicions about demand elasticity, I normalized the data to represent the monthly ridership deviation from mean.
+* This visualisation exposes the elasticity profile of each group, showing that Casual Riders exhibit significantly higher volatility (elasticity), with monthly deviations swinging from approximately -85% to +90% relative to their annual mean.
+* Conversely, Members maintain a much tighter range of deviation (approximately -64% to +45%), providing empirical evidence that their demand is more inelastic and resistant to seasonal shifts.
+* This qualitative contrast in user behaviour confirms that while Members provide the stable, essential baseline of the business (they are mostly commuters), Casual Riders are the primary drivers of seasonal capacity fluctuations (they are mostly recreational users), making them the ideal target for conversion strategies.
 
 
 
