@@ -414,6 +414,9 @@ The data cleaning and transformation phase prioritized data quality without comp
 
 ### Analyze
 
+TALK ABOUT HOW THE DATA WAS IMPORTED INTO TABLEAU, SMALLER TABLES, STATIC RENDERINGS, ETC. OPTIMIZATION, SPEED
+
+
 **Annual Bike Rides By User Type**
 
 IMAGE
@@ -489,11 +492,18 @@ IMAGE
 * We can also see that Members utilize electric bikes at the highest volume, reinforcing their profile as utilitatian commuters, as they prioritize the faster, most reliable transport method for their daily work-related trips.
 * While Casual Riders also use electric bikes to a significant degree, their sustained use of classic bikes is consistent with a recreational profile, not constrained the the time pressures of a daily commute.
 
-**Spatial Hotspot Analysis**
+**Comparative Spatial Flow Analysis**
 
-As my dataset is huge - more than five million rows - and the only complete spatial infomation we have for each bike trip is GPS coordinates, I had to decided on an efficient way to visualize this data in Tableau. In order to do so, I created a new summary table in BigQuery called `cyclistic_spatial` that applies spatial binning protocols to the GPS coordinate data found in my cleaned dataset. GPS coordinates were rounded off to four decimal places, resulting in a binning accuracy of roughly 11m, which is perfect for providing us with a granular level of information whilst keeping the processing in Tableau fast and efficient.
+As my dataset is huge - more than five million rows - and the only complete spatial infomation we have for each bike trip is GPS coordinates, I had to decided on an efficient way to visualize this data in Tableau. In order to do so, I created a new summary table in BigQuery called `cyclistic_spatial` that applies spatial binning protocols to the GPS coordinate data found in my cleaned dataset. GPS coordinates were rounded off to four decimal places, resulting in a spatial accuracy of roughly 11m, which is perfect for providing us with a granular level of information whilst keeping the processing in Tableau fast and efficient.
+
+This visualization uses a comparative spatial flow matrix to contrast the bike-share utilization patterns of the two user segments. By isolating the start and end coordinates of everytrip into a 2x2 grid, the visualization removes visual occlusion and reveals the underlying pulse of the Cyclistic network:
 
 IMAGE
+
+* The Member panels in the right column demonstrate a high degree of spatial alignment between start and end locations, indicating a predictable, utilitarian communter loop, where riders utilize the service for round-trips, whereas for Casual Riders, there is a lower degree of spatial alignment, indicating that these trips are not return trips, but recreational in nature.
+* For Members, the relative evenness in size of the circles (representing the number of trips) in the start and end locations further indicates that these are mostly round-trips, whereas for Casual Riders, the larger circle size variance is suggestive of predominantly one-way trips that are recreational in nature.
+* The Member panels also show a greater geographic spread of ride start and end locations, with many rides going between residential suburbs and the central business district, whereas for Casual Riders, the trips are concentrated in known tourist areas of the city, most very near the lakefront.
+* This comparative spatial flow analysis clear shows the difference in usage patterns between the two user groups.
 
 
 
