@@ -1,6 +1,8 @@
 # Google Data Analytics Capstone Project: Cyclistic Bike-Share
 
-![Cyclistic Bike-Share_Logo](images/cyclistic_logo.png)
+<div align="center">
+  <img src="images/cyclistic_logo.png" alt="Cyclistic Bike-Share Logo" width="200"/>
+</div>
 
 ## Introduction
 
@@ -414,8 +416,13 @@ The data cleaning and transformation phase prioritized data quality without comp
 
 ### Analyze
 
-TALK ABOUT HOW THE DATA WAS IMPORTED INTO TABLEAU, SMALLER TABLES, STATIC RENDERINGS, ETC. OPTIMIZATION, SPEED
+Before diving into the analysis, it is important to note the strategy I employed for visualizing such a large dataset of over five million records. While BigQuery was essential for processing the raw, row-level data, attempting to load this entire dataset into Tableau would have resulted in latency issues and a degraded user experience. To ensure the visualizations remained responsive, I adopted a summary-first approach, which included:
 
+**Aggregated Data Modeling:** Instead of importing the full, massive `cyclistic_tableau` dataset into Tableau, I performed the heavy lifting within BigQuery. I created specialized, smaller summary tables tailored to specific analytical questions that I would be answering with my visualizations.
+
+**Strategic Use of Static Renderings:** For the purposes of this capstone report, which is a written report, I utilized static renderings exported from these optimized views. This decision was made to ensure the report remains lightweight and accessible, focusing the reader’s attention on the distilled, actionable insights rather than the raw, unfiltered volume of the dataset.
+
+This approach prioritized performance and clarity, ensuring that the analytical narrative remained clear, without being obscured by the technical overhead of querying more than five million rows of data in real-time.
 
 **Annual Bike Rides By User Type**
 
@@ -494,7 +501,7 @@ IMAGE
 
 **Comparative Spatial Flow Analysis**
 
-As my dataset is huge - more than five million rows - and the only complete spatial infomation we have for each bike trip is GPS coordinates, I had to decided on an efficient way to visualize this data in Tableau. In order to do so, I created a new summary table in BigQuery called `cyclistic_spatial` that applies spatial binning protocols to the GPS coordinate data found in my cleaned dataset. GPS coordinates were rounded off to four decimal places, resulting in a spatial accuracy of roughly 11m, which is perfect for providing us with a granular level of information whilst keeping the processing in Tableau fast and efficient.
+As my dataset is huge, and the only complete spatial infomation we have for each bike trip is GPS coordinates, I had to decided on an efficient way to visualize this data in Tableau. In order to do so, I created a new summary table in BigQuery called `cyclistic_spatial` that applies spatial binning protocols to the GPS coordinate data found in my cleaned dataset. GPS coordinates were rounded off to four decimal places, resulting in a spatial accuracy of roughly 11m, which is perfect for providing us with a granular level of information whilst keeping the processing in Tableau fast and efficient.
 
 This visualization uses a comparative spatial flow matrix to contrast the bike-share utilization patterns of the two user segments. By isolating the start and end coordinates of everytrip into a 2x2 grid, the visualization removes visual occlusion and reveals the underlying pulse of the Cyclistic network:
 
