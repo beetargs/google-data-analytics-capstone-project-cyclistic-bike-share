@@ -6,19 +6,21 @@
 
 ## Introduction
 
-In this case study, I perform the work of a data analyst working for a fictional company, Cyclistic, which is a succesful bike-sharing company based in Chicago and which was started in 2016. In the brief, we are told that they have a fleet of more than 5,000 bikes and 600 docking stations dotted around the city. With this large number of bikes and docking stations, users can take a bike from their starting station and return it to any other station in the network, making it incredibly easy and convenient.
+In this case study, I perform the work of a data analyst working for a fictional company, Cyclistic, which is a successful bike-sharing company based in Chicago and which was started in 2016. In the brief, we are told that they have a fleet of more than 5,000 bikes and 600 docking stations dotted around the city. With this large number of bikes and docking stations, users can take a bike from a station and return it to any other station in the network, making it incredibly easy and convenient.
 
 Furthermore, we are told that their offering is unique in that, apart from traditional two-wheel bikes, they also offer reclining bikes, hand tricycles, and cargo bikes, thus making bike-share more inclusive to people with disabilities and riders who can’t use a standard two-wheeled bike. The majority of riders opt for traditional bikes; about 8% of riders use the assistive options. We are also told that Cyclistic users are more likely to ride for leisure, but about 30% use the bikes to commute to work each day.
 
-They have two types of customers: **casual riders** who purchase single-ride or full-day passes, and **members** who purchase annual memberships. Cyclistic’s finance analysts have concluded that **annual members are much more profitable than casual riders**, and the company's marketing director believes that the company's future success depends on **maximizing the number of annual memberships**. Therefore, my team and I have been tasked with understanding how casual riders and annual members use Cyclistic bikes differently. **Using the insights that we gain, our team will formulate a new marketing strategy to convert casual riders into annual members**.
+They have two types of customers: *Casual Riders* who purchase single-ride or full-day passes, and *Members* who purchase annual memberships. Cyclistic’s finance analysts have concluded that **annual members are much more profitable than casual riders**, and the company's marketing director believes that the company's future success depends on **maximizing the number of annual memberships**. Therefore, my team and I have been tasked with understanding how casual riders and annual members use Cyclistic bikes differently. **Using the insights that we gain, our team will formulate a new marketing strategy to convert casual riders into annual members**.
 
-In order to conduct my analysis of the data, I will be using Google's data analysis methodology which follows these six steps:
+In order to conduct our analysis of the data, we will be using Google's data analysis methodology which follows these six steps:
 1. Ask
 2. Prepare
 3. Process
 4. Analyze
 5. Share
 6. Act
+
+*(Note: Although the project brief states that I am working as part of a team, I will be referring to myself in the first person singular as I have done this project entirely on my own.)*
 
 ### Ask
 
@@ -52,23 +54,23 @@ The data has been provided in the form of CSV files, one file for each month, an
 | 10 | start_lng | FLOAT64 | Trip start longitude |
 | 11 | end_lat | FLOAT64 | Trip end latitude |
 | 12 | end_lng | FLOAT64 | Tripe end longitude |
-| 13 | member_casual | STRING | Rider type (casual rider or member) |
+| 13 | member_casual | STRING | Rider type (Casual Rider or Member) |
 
 **Data Limitations**  
 
 While the dataset provided by Divvy Bikes is overall comprehensive and reliable, it is subject to several limitations that must be taken into account when performing an analysis on the data. After a brief initial exploratory data analysis using Excel, these are the key observations that I made:
 
 1. **Lack of Personally Identifiable Information**  
-Data privacy regulations prohibit the use of riders' personal information. It is thus impossible to create profiles for individual riders, this includes both casual riders and annual members. While it can almost safely be assumed that most annual members are local Chicago residents, the implication of the lack of personally identifiable information is that we can deduce even less about casual riders, and we cannot determine if they are local Chicago residents, tourists or daily commuters. We are also unable to track if an individual has purchased multiple single-ride passes over time. This makes is impossible to distinguish between frequent casual riders and one-time riders.
+Data privacy regulations prohibit the use of riders' personal information. It is thus impossible to create profiles for individual riders, this includes both casual riders and annual members. While it can almost safely be assumed that most Members are local Chicago residents, the implication of the lack of personally identifiable information is that we can deduce even less about Casual Riders, and we cannot determine if they are local Chicago residents, tourists or daily commuters. We are also unable to track if an individual has purchased multiple single-ride passes over time. This makes is impossible to distinguish between frequent casual riders and one-time riders, nor to build up riding profiles for individual users.
 
 2. **Missing Station and GPS Coordinate Data**  
-A large portion of the dataset contains missing `start_station_name`, `end_station_name`, or GPS coordinate fields. This represents a significant portion of the dataset. While we do mostly have the GPS coordinates for these trips with missing station fields, the lack of station names makes it harder to analyze station-specific usage patterns without extra data-cleaning steps, such as mapping the available GPS coordinates back to known stations in the bike-share network.
+A large portion of the dataset contains missing `start_station_name`, `end_station_name`, or GPS coordinate fields. This represents a significant portion of the dataset. While we do mostly have the GPS coordinates for these trips with missing station fields, the lack of station names makes it harder to analyze station-specific usage patterns without performing extra data-cleaning steps, such as mapping the available GPS coordinates back to known stations in the bike-share network.
 
 3. **Negative/Zero Ride Lengths**  
-There are several trips where the `ended_at` time is before ot equal to the `started_at` time. We can assume that these instances can be related to factors such as system maintenance, bike checks, or technical glitches in the docking sensor.
+There are several trips where the `ended_at` time is before or equal to the `started_at` time. We can assume that these instances could be related to factors such as system maintenance, bike checks, or technical glitches in the docking sensor.
 
 4. **Extremely Short/Long Rides**  
-Trips that last for only a few seconds or that are extremely long (more than 24 hours) should be considered to be anomalies. Very short rides could be assumed to be "false starts", where a user immediately re-docks a bike due to a mechanical issue or a change of mind. Very long rides could be assumed to be a stolen bike or one that wasn't docked correctly.
+Trips that last for only a few seconds or that are extremely long (more than 24 hours) should be considered to be anomalies. Very short rides could be assumed to be "false starts", where a user immediately re-docks a bike due to a mechanical issue or has a change of mind. Very long rides could be assumed to be a stolen bike or one that wasn't docked correctly. Either way, both categories of rides are of an impractical or impossible duration.
 
 5. **Limited Context**  
 The dataset provides only "what happened" (the ride), but not "why it happened" (the motivation). We thus lack qualitative data about the rides and have to infer intent from behaviour, which is an assumption, not a fact. To be more specific, the data does not tell us why any of the bikes were used, nor have we been supplied with any contextual data such as weather conditions, demographics of the riders, etc.
@@ -77,7 +79,7 @@ The dataset provides only "what happened" (the ride), but not "why it happened" 
 
 **Importing and Combining the Data**
 
-Due to the large size of the CSV datasets (millions of rows), I decided to use SQL via BigQuery in order to process the data as Excel would've be an inefficient tool for this job due to the limitations of how many rows it can handle. BigQuery is the ideal tool for this job as it can easily and efficiently handle very large datasets containing millions of rows.
+Due to the large size of the CSV datasets (millions of rows), I decided to use SQL via BigQuery in order to process the data as Excel would've been an inefficient tool for this job due to the limitations of how many rows it can comfortably handle. BigQuery is the ideal tool for this job as it can easily and efficiently handle very large datasets containing millions of rows.
 
 However, as I am using the Sandbox version of BigQuery and do not have billing enabled on my account, I was unable to create a bucket in Google Cloud Services in order to upload the original CSV files to BigQuery, which would've been the preferred way of doing this. Many of these CSV files exceed 100MB in size, which is the local file upload limit in BigQuery, so this option was not available to me either. My workaround to this problem was to use the Pandas library in Python to 'chunk' the CSV files into smaller files each containing 50,000 rows or less, making the size of the files to be around 10MB each. I achieved this by running the following Python script in the folder containing the CSV source files:
 
@@ -105,7 +107,7 @@ for file in files:
 print("Splitting complete.")
 ```
 
-After the 'chunking' process was complete, I was left with 113 CSV files that now needed to be uploaded to BigQuery. BigQuery would not allow me to select multiple files using the 'Upload' option, and trying to upload them individually would've been time-consuming and inefficient, so I decided to use the 'bq' tool in the Google Cloud CLI suite of programs to automate the process of uploading those smaller CSV files directly into BigQuery from my local storage device.
+After the 'chunking' process was complete, I was left with 113 CSV files that now needed to be uploaded to BigQuery. BigQuery would not allow me to select multiple files using the 'Upload' option, and trying to upload them individually would've been very time-consuming and inefficient, so I decided to use the 'bq' tool in the Google Cloud CLI suite of programs to automate the process of uploading those smaller CSV files directly into BigQuery from my local storage device.
 
 However, before I could do that, I had to create a table inside of BigQuery and populate it with the first of the chunked CSV files in order to create the table schema so that the remaining 112 files could be imported correctly. As this first file was a single file of only about 10MB in size, it was possible to upload it using the 'Upload' option in the BiqQuery web interface. I then removed this CSV file from the directory containing the other CSV files as I did not want to duplicate its data in the table by re-importing it into the table during the batch upload using the 'bq' tool. Further to this, as each of the chunked files each contained a header, I had to insert the `skip_leading_rows=1` parameter into the command line prompt to remove the headers so that they would not be imported into the table I was creating. This was the command line prompt that I used to import the remaining 112 files into BigQuery:
 
@@ -158,19 +160,16 @@ FROM `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset`
 
 *Validated Ride Durations*
 
-The next step in the data cleaning came in the form of culling bike trips with durations that were of an impossible or impractical length to be considered valid. I decided to cull all trips with the following ride durations:
-1. Ride duration < 0
-2. Ride duration = 0
-3. Ride duration < 1 minute
-4. Ride duration > 18 hours
+The next step in the data cleaning process came in the form of culling bike trips with durations that were of an impossible or impractical length to be considered valid. I decided to cull all trips with the following ride durations:
 
-My reasonings behind the culling criteria are as follows:
-1. Ride durations that are negative are logically impossible and could be the result of a data-recording issue, system maintenance, or a docking sensor issue.
-2. Ride durations that have a duration of zero seconds have thus travelled zero distance and cannot be considered to be valid trips, regardless of the reason.
-3. Ride durations that are only a few seconds long could be due to system maintenance, a re-docking attempt, or a user undocking a bike and then changing their mind and re-docking it, but either way, they are too short to tell us anything useful about the trip. While these are technically 'trips', they don't tell us anything useful about usage behaviour as they are trips too short to be purposeful.
-4. Ride durations that are longer than 18 hours in duration represent a physical impossibility for most riders, even if they stopped to have breaks along the way. Ride lengths exceeding 18 hours should thus be considered to be either multiple rides, bikes having being removed from their docking stations for maintenance, or possibly bikes that have been stolen.
+| Anomaly to be Culled | Reason |
+| :---                 | :---   |
+| Ride duration < 0 | Ride durations that are negative are logically impossible and could be the result of a data-recording issue, system maintenance, or a docking sensor issue. |
+| Ride duration = 0 | Ride durations that have a duration of zero seconds have thus travelled zero distance and cannot be considered to be valid trips, regardless of the reason. |
+| Ride duration < 1 minute | Ride durations that are only a few seconds long could be due to system maintenance, a re-docking attempt, or a user undocking a bike and then changing their mind and re-docking it, but either way, they are too short to tell us anything useful about the trip. While these are technically 'trips', they don't tell us anything useful about usage behaviour as they are trips too short to be purposeful. |
+| Ride duration > 18 hours | Ride durations that are longer than 18 hours in duration represent a physical impossibility for most riders, even if they stopped to have breaks along the way. Ride lengths exceeding 18 hours should thus be considered to be either multiple rides, bikes having being removed from their docking stations for maintenance, or possibly bikes that have been stolen. |
 
-In order to faciliate the cleaning process, and also to make the data more human-readable, I added the `ride_duration_mins` column to the dataset, which shows ride duration rounded off to the nearest minute. Being a calculated field, it was created by calculating the difference between the `started_at` and `ended_at` times, dividing by 60, and then rounding the result to the nearest integer. This is the code that I used to achieve this:
+In order to faciliate the cleaning process, and also to make the data more human-readable, I added the `ride_duration_mins` column to the dataset, which shows ride durations rounded off to the nearest minute. Being a calculated field, it was created by calculating the difference between the `started_at` and `ended_at` times, dividing by 60, and then rounding the result to the nearest integer. This is the code that I used to achieve this:
 
 ```
 CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_clean_dataset` AS
@@ -210,7 +209,7 @@ My audit revealed the following:
 
 For the purposes of interpretation, it must be noted that the total number of anomalies was calculated by adding together trips with ride durations less than one minute and longer than 18 hours, and that trips with ride durations less than zero and equal to zero are merely a subset of trips with ride durations less than one minute.
 
-The 122,609 ride duration anomalies represent only 2.09% of our dataset, so I felt confident in culling them as this reduction was statistically insignificant, but enhances the reliability of our results. The culling of these outliers was performed with the following code:
+The 122,609 ride duration anomalies represent only 2.09% of our dataset, so I felt confident in culling them as this reduction was statistically insignificant, but enhances the reliability of our results by removing outliers and garbage data. The culling was performed with the following code:
 
 ```
 CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_durations_culled` AS
@@ -222,7 +221,7 @@ WHERE ride_duration_mins >= 1
 
 This produced a new table named 'cyclistic_durations_culled' containing 5,726,059 entries, which I verified the integrity of using a `COUNT(*)` query.
 
-To validate my decision to remove these records from the dataset, and to check if these anomalies were skewing the results, I conducted a comparative statistical audit by calculating the mean, minimum and maximum ride durations before and after the removal of these anomalies using variations of this code:
+To validate my decision to remove these records from the dataset, and to check if these anomalies were indeed skewing the results, I conducted a comparative statistical audit by calculating the mean, minimum and maximum ride durations before and after the removal of these anomalies using variations of this code:
 ```
 SELECT 
   AVG(ride_duration_mins) AS average_ride_duration_mins,
@@ -246,7 +245,7 @@ It must be pointed out the negative percentage change in the 'Min ride duration 
 
 *Checked for Trips with Missing Start and End Point Data*
 
-For a bike trip (ride) record to be considered complete and useful for the purposes of our analysis, it must contain complete start and end point data. As stated earlier, my initial exploration of the monthly datasets revealed that a significant portion of the datasets contains missing `start_station_name` and `end_station_name` data, as well as missing GPS coordinate data for bike trips, so this had to be investigated in detail. First, I checked how many bike trip entries lack station names, so I ran this query in BigQuery to get the exact figures:
+For a bike trip (ride) record to be considered complete and useful for the purposes of our analysis, it must contain complete start and end point data. As stated earlier, my initial exploration of the original monthly datasets revealed that a significant portion of the datasets contains missing `start_station_name` and `end_station_name` data, as well as missing GPS coordinate data for bike trips, so this had to be investigated in detail. First, I checked how many bike trip entries lack station names, so I ran this query in BigQuery to get the exact figures:
 
 ```
 SELECT
@@ -268,7 +267,7 @@ The query showed the following:
 
 In the project brief, we are told that Cyclistic's business model is station-based and uses fixed docking systems located at each station from which a user must remove a bike for use and then either return it to the same station or any other station in the network. It is thus a fair assumption that the primary source of 'location truth' for each bike trip *should* be the station names, as bikes need to be physically docked, or at the very least be present in the GPS-ring-fenced station locations, in order for station names to be recorded in the trip records, assuming that no technical glitch or data collection error occurred during this process.
 
-However, as our query revealed, 1,873,291 trips out of our current dataset of 5,726,059 trips are missing either the start or end station names, making these records incomplete and problematic to use for our analysis. These incomplete entries makes up a staggering 32.7% of our dataset and could not simply be removed without leading to catastrophic data losses that could severely skew the analysis, destroy statistical power, and introduce significant selection bias. A decision had to be made about how to handle these trips with missing station names.
+However, as our query revealed, 1,873,291 trips out of our current dataset of 5,726,059 trips are missing either the start or end station names, making these records incomplete and problematic to use for our analysis. These incomplete entries makes up a staggering 32.7% of our dataset and could not simply be removed without leading to catastrophic data losses that could severely skew the analysis, destroy statistical power, and introduce significant selection bias. A decision had to be made about how to handle these records.
 
 A high frequency of missing station names could suggest a systemic data collection issue, or possible user non-compliance with docking protocols, but the assumption could not be made that these trips were automatically invalid. Before making a decision on how to handle the missing station names, I conducted a data availability assessment to determine how complete the GPS coordinate data was for our bike trip records:
 
@@ -316,7 +315,7 @@ The results were as follows:
 | End Longitude Missing | 290 | 0.004% |
 | End Latitude Missing | 290 | 0.004% |
 
-The query showed that the end coordinates were missing in only 290 of bike trip records, representing only 0.004%. I then checked to see if these records with missing end coordinates had end station names, but they didn't, so it was not possible to complete the records using station names as we didn't have that data either. As these incomplete records make up only a miniscule and statistically insignificant part of the dataset, I decided that these records should be removed rather than wasting time exploring these anomalies further:
+The query showed that the end coordinates were missing in only 290 of the bike trip records, representing only 0.004%. I then checked to see if these records with missing end coordinates had end station names, but they didn't, so it was not possible to complete the records using station names as we didn't have that data either. As these incomplete records make up only a miniscule and statistically insignificant part of the dataset, I decided that these records should be removed rather than wasting time exploring these anomalies further:
 
 ```
 CREATE OR REPLACE TABLE `course-493609.cyclistic_capstone_project.cyclistic_gps_complete` AS
@@ -354,11 +353,11 @@ Even though I decided to use GPS coordinate data as the only source of location 
 2. Bad weather can interfere with GPS satellite signals and return false values.
 3. GPS sensors can themselves be faulty, require calibration, and thus provide inaccurate location information.
 
-In a perfect world, we would have station name data for every record in our dataset, but as we don't, this compromise of using only GPS coordinate data was reached. However, assuming that the GPS coordinate data that we have in our dataset is accurate enough for purposes of this analysis, it has the benefit of more accurately showing us true bike trip behaviour of users as it shows us exactly where they pick up and the bike and drop it off, regardless of whether it was at an offical station, public rack, or on the side of the road.
+In a perfect world, we would have station name data for every record in our dataset, but as we don't, this compromise of using only GPS coordinate data was reached. However, assuming that the GPS coordinate data that we have in our dataset is accurate enough for purposes of this analysis, it has the benefit of more accurately showing us true bike trip behaviour of users as it shows us exactly where they pick up and the bike and drop it off, regardless of whether it was at an offical station, public rack, or on the side of a road.
 
 *Checked for Null Values in the `member_casual` Column*
 
-As the stated goal of this analysis is to determine the difference in bike use behaviour between members and casual riders, I checked to for any null values in the `member_casual` field. If null values exists, then those records need to be removed from the dataset as no inferences can be made without knowing the membership status of a user:
+As the stated goal of this analysis is to determine the difference in bike use behaviour between Members and Casual Riders, I checked to for any null values in the `member_casual` field. If null values exists, then those records need to be removed from the dataset as no inferences can be made without knowing the membership status of a user:
 
 ```
 SELECT
@@ -412,7 +411,7 @@ This culling process also helped to reduce the size of the dataset, making it mo
 
 *Summary of Data Cleaning and Transformation Activities*
 
-The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity dataset `cyclistic_tableau` consists of 5,725,850 records. This high preservation rate (97.9%) ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning member versus casual rider behavior, and are based on a comprehensive and representative sample of the overall bike-share system usage.
+The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity `cyclistic_tableau` dataset consists of 5,725,850 records. This high preservation rate (97.9%) ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning Member versus Casual Rider behavior, and are based on a comprehensive and representative sample of the overall bike-share system usage.
 
 ### Analyze
 
