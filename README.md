@@ -20,7 +20,7 @@ In order to conduct our analysis of the data, we will be using Google's data ana
 5. Share
 6. Act
 
-*(Note: Although the project brief states that I am working as part of a team, I will be referring to myself in the first person singular as I have done this project entirely on my own.)*
+*(Note: Although the project brief states that I am working as part of a team, I will be referring to myself in the first person singular as I have done this project entirely on my own.)*  
 
 ### Ask
 
@@ -368,7 +368,7 @@ WHERE member_casual IS NULL;
 
 No null values were found.
 
-*Checked for null values in `started_at` and `ended_at` Columns`
+*Checked for null values in `started_at` and `ended_at` Columns*
 
 In order to perform a thorough analysis of the data, we need complete timestamp data for when each trip started and ended. I ran the following query to check for null values in these respective fields:
 
