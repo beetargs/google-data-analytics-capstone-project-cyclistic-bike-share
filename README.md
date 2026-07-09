@@ -423,9 +423,13 @@ Before diving into the analysis, it is important to note the strategy I employed
 
 This approach prioritized performance and clarity, ensuring that the analytical narrative remained clear, without being obscured by the technical overhead of querying more than five million rows of data in real-time.
 
+The full dashboards for this project can be found on Tableau Public using this [link](https://public.tableau.com/app/profile/gregory.beetar/viz/CyclisticCapstoneProject_17835393536070/SpatialNetworkInsights).
+
 **Annual Bike Rides By User Type**
 
-IMAGE
+<div align="center">
+  <img src="images/annual_bike_rides.png" alt="Annual Bike Rides by User Type"/>
+</div>
 
 * In the 12 months of data that were analyzed, Members were the dominant user segment, accounting for 64.44% of bike rides, compared to Casual Riders at 35.56%.
 * While Casual Riders represent over a third of the total ride volume, the membership subscription model is the primary driver of engagement, capturing nearly two-thirds of all trips.
@@ -433,7 +437,9 @@ IMAGE
 
 **User Type Breakdown by Month**
 
-IMAGE
+<div align="center">
+  <img src="images/breakdown_by_month.png" alt="User Type Breakdown by Month"/>
+</div>
 
 * While the usage of Casual Riders follows a strong seasonal curve peaking mid-year during the warmer months, Members maintain a higher baseline throughout the year, with a smaller peak during the warmer summer months, indicating that their need for transportation is relatively inelastic. This demand inelasticity strongly suggests usage that is utilitatian in nature, and is indicative of a commuter demographic utilizing the service for daily, recurring trips between home, work, or transit hubs.
 * Conversely, the usage by Casual Riders appears to be more discretionary in nature, influenced by seasonal factors, such as the weather. Hence, we make the assumption that Casual Riders are predominantly comprised of users whose bike usage is recreation-focused.
@@ -442,7 +448,9 @@ IMAGE
 
 While the previous breakdown by raw ride counts offered an essential quantitative breakdown of absolute demand, a secondary analysis was required to quantify the behavioral differences between user groups. To move beyond simple ride volume and confirm my suspicions about demand elasticity, I normalized the data to represent the monthly ridership deviation from mean.
 
-IMAGE
+<div align="center">
+  <img src="images/monthly_ridership_dev.png" alt="Monthly Ridership Deviation from Mean"/>
+</div>
 
 * This visualisation exposes the elasticity profile of each group, showing that Casual Riders exhibit significantly higher volatility (elasticity), with monthly deviations swinging from approximately -85% to +90% relative to their annual mean.
 * Conversely, Members maintain a much tighter range of deviation (approximately -64% to +45%), providing empirical evidence that their demand is more inelastic and resistant to seasonal shifts.
@@ -454,7 +462,9 @@ IMAGE
 
 While seasonal analyses give us a broad overview of *why* people ride during different times of the year (i.e. commuter vs recreational), day- and time-of-use analyses give us a better idea of rider intent regardless of the season. We would expect that commuter rides would be more concentrated on the working days (i.e. Monday to Friday), and also on working times (i.e. early mornings and late afternoons).
 
-IMAGE
+<div align="center">
+  <img src="images/day_of_week_analysis.png" alt="Day of Week Analysis"/>
+</div>
 
 * As we can see from the chart, Member ridership is heavily concentrated on weekdays, consistent with what we would expect from non-discretionary, utilitarian commuting, where riders rely on Cyclistic for their work commutes.
 * In contrast, Casual Rider volume is lowest during the early workweek and exhibits a surge towards the weekend, peaking on Saturday. This weekend-dominant pattern reinforces the qualitative assessment that Casual Rider usage is primarily driven by recreational, leisure-based motivations rather routine transit needs.
@@ -464,7 +474,9 @@ IMAGE
 
 To finalize the behavioural characterization of Cyclistic users, I performed an hourly trend analysis, visualized in the line chart below. This data provides the clearest temporal distinction between the two user segments:
 
-IMAGE
+<div align="center">
+  <img src="images/time_of_day_analysis.png" alt="Time of Day Analysis"/>
+</div>
 
 * As we expected, the line chart shows sharp and distinct peaks around 08h00 and 17h00 in the Members group, which aligns closely with standard Chucago workday schedules. It confirms the utilitarian nature of these trips, i.e. that they are work commutes. This bimodal pattern is strong quantitative evidence that Members rely on Cyclistic's bike-share service as a primary transit method for the workday.
 * Also, as expected,  we see a more unimodal distribution with the Casual Riders group, with a gradual increase in trips that peak in the late afternoon, characteristic of recreational or tourist usage. The absence of a morning rush-hour peak indicates that this segment is not constrained by traitional workplace arrival times, further validating their profile as recreational or leisure-based users.
@@ -474,16 +486,20 @@ IMAGE
 
 The visualization below illustrates a clear divergence in ride duration between the two user groups based on the season, providing further empirical evidence of the intent behind rider behaviour:
 
-IMAGE
+<div align="center">
+  <img src="images/avg_ride_dur_month.png" alt="Average Ride Duration by Month"/>
+</div>
 
 * Members maintain a stable, lower average ride duration throughout the year, typically around 10 to 12 minutes, which shows their intent to engage in efficient travel. This consistency is indicative of purposeful, utilitarian transit where riders prioritize the most direct route to their destination (work).
 * Casual Riders exhibit significantly longer ride durations, peaking at over 20 minutes during the warm summer months. The higher average duration and increased seasonal volatility confirm a leisure-based usage patterns, where the experience and duration of the ride itself are central to the user's engagement.
 
-**Average Ride Duration by Month**
+**Average Ride Duration by Day**
 
 The line chart below confirms the divergence in ride duration between the two user groups:
 
-IMAGE
+<div align="center">
+  <img src="images/avg_ride_dur_day.png" alt="Average Ride Duration by Day"/>
+</div>
 
 * Members maintain a consistently stable and shorter average ride duration, regardless of the day of the week. There is a slight increase in trip duration for Member over the weekend, suggesting some recreational bike usage on their part.
 * Again, Casual Riders demonstrate significant variability, with ride durations escalating sharply as the weekend approached, and peaking on the weekend. This weekend-dominant increase confirms a leisure-based intent, where the duration of the ride is extended for recreational exploration rather than functional transportation.
@@ -492,7 +508,9 @@ IMAGE
 
 My cleaned dataset `cyclistic_tableau` contains only two type of bikes: 'classic bike' and 'electric bike'. I doubled-checked the original uncleaned dataset `cyclistic_12_months_dataset` to make sure that no bike types were lost from this analysis due to data cleaning - none were. We can speculate that the choice of bike might serve as an indicator of user intent, so to investigate this, I created the following visualization:
 
-IMAGE
+<div align="center">
+  <img src="images/usage_by_bike_type.png" alt="Usage by Bike Type"/>
+</div>
 
 * Electric bikes are the most utilized equipment across both user segments, demontrating that both sets of riders value the efficiency and ease provided by electric-assist technology.
 * We can also see that Members utilize electric bikes at the highest volume, reinforcing their profile as utilitatian commuters, as they prioritize the faster, most reliable transport method for their daily work-related trips.
@@ -504,7 +522,9 @@ As my dataset is huge, and the only complete spatial infomation we have for each
 
 This visualization uses a comparative spatial flow matrix to contrast the bike-share utilization patterns of the two user segments. By isolating the start and end coordinates of everytrip into a 2x2 grid, the visualization removes visual occlusion and reveals the underlying pulse of the Cyclistic network:
 
-IMAGE
+<div align="center">
+  <img src="images/comp_spatial_flow_analysis.png" alt="Comparative Spatial Flow Analysis"/>
+</div>
 
 * The Member panels in the right column demonstrate a high degree of spatial alignment between start and end locations, indicating a predictable, utilitarian communter loop, where riders utilize the service for round-trips, whereas for Casual Riders, there is a lower degree of spatial alignment, indicating that these trips are not return trips, but recreational in nature.
 * For Members, the relative evenness in size of the circles (representing the number of trips) in the start and end locations further indicates that these are mostly round-trips, whereas for Casual Riders, the larger circle size variance is suggestive of predominantly one-way trips that are recreational in nature.
@@ -515,7 +535,9 @@ IMAGE
 
 This analysis uses a net flow intensity matrix to diagnose inefficiencies within the Cyclistic bike-share network. By quantifying the imbalance between trip start and end points, this visualization identifies specific nodes where the system faces potential inventory pressures, either through bike depletion (a net departure shortage - red squares) or surplus accumulation (a net arrival surplus - blue squares). Those nodes which are balanced are represented by the white squares.
 
-IMAGE
+<div align="center">
+  <img src="images/net_flow_int_map.png" alt="Net Flow Intensity Analysis"/>
+</div>
 
 * The comparison reveals that Members and Casual Riders impose different logistical loads on the network, with imbalances being present in each respective group's characteristic start and end trip points.
 * Distinct clusters of imbalances in the Casual Riders panel highlight that recreational usage often drives demand towards specific attractor nodes, such as parks, the waterfront, and tourist hotspots.
