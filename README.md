@@ -20,7 +20,7 @@ In order to conduct our analysis of the data, we will be using Google's data ana
 5. Share
 6. Act
 
-*(Note: Although the project brief states that I am working as part of a team, I will be referring to myself in the first person singular as I have done this project entirely on my own.)*  
+*(Note: Although the project brief states that I am working as part of a team, I will be referring to myself in the first person singular as I have done this project on my own.)*  
 
 ### Ask
 
@@ -70,7 +70,7 @@ A large portion of the dataset contains missing `start_station_name`, `end_stati
 There are several trips where the `ended_at` time is before or equal to the `started_at` time. We can assume that these instances could be related to factors such as system maintenance, bike checks, or technical glitches in the docking sensor.
 
 4. **Extremely Short/Long Rides**  
-Trips that last for only a few seconds or that are extremely long (more than 24 hours) should be considered to be anomalies. Very short rides could be assumed to be "false starts", where a user immediately re-docks a bike due to a mechanical issue or has a change of mind. Very long rides could be assumed to be a stolen bike or one that wasn't docked correctly. Either way, both categories of rides are of an impractical or impossible duration.
+Trips that last for only a few seconds or that are extremely long (more than 18 hours) should be considered to be anomalies. Very short rides could be assumed to be "false starts", where a user immediately re-docks a bike due to a mechanical issue or has a change of mind. Very long rides could be assumed to be a stolen bike or one that wasn't docked correctly. Either way, both categories of rides are of an impractical or impossible duration.
 
 5. **Limited Context**  
 The dataset provides only "what happened" (the ride), but not "why it happened" (the motivation). We thus lack qualitative data about the rides and have to infer intent from behaviour, which is an assumption, not a fact. To be more specific, the data does not tell us why any of the bikes were used, nor have we been supplied with any contextual data such as weather conditions, demographics of the riders, etc.
@@ -129,7 +129,7 @@ I verified this by using Excel to reconcile the total row count of the 12 CSV so
 
 **Data Cleaning and Transformation**
 
-*Checked for Duplicate `ride_id` records*
+*Checked For Duplicate `ride_id` Records*
 
 As `ride_id` is intended to be the unique identifier (primary key) for each individual bike ride, we can assume that there should be no duplicate `ride_id` entries in our dataset. I thus performed a validation in BigQuery using the following code:
 
@@ -243,7 +243,7 @@ We have confirmed that these ride duration anomalies were skewing our results to
 
 It must be pointed out the negative percentage change in the 'Min ride duration (mins)' statistic is in fact a *positive* improvement of 101.82% relative to the absolute magnitude of the original baseline. The number is negative because of the instances of logically impossible negative ride durations present in the dataset.
 
-*Checked for Trips with Missing Start and End Point Data*
+*Checked For Trips With Missing Start And End Point Data*
 
 For a bike trip (ride) record to be considered complete and useful for the purposes of our analysis, it must contain complete start and end point data. As stated earlier, my initial exploration of the original monthly datasets revealed that a significant portion of the datasets contains missing `start_station_name` and `end_station_name` data, as well as missing GPS coordinate data for bike trips, so this had to be investigated in detail. First, I checked how many bike trip entries lack station names, so I ran this query in BigQuery to get the exact figures:
 
@@ -355,7 +355,7 @@ Even though I decided to use GPS coordinate data as the only source of location 
 
 In a perfect world, we would have station name data for every record in our dataset, but as we don't, this compromise of using only GPS coordinate data was reached. However, assuming that the GPS coordinate data that we have in our dataset is accurate enough for purposes of this analysis, it has the benefit of more accurately showing us true bike trip behaviour of users as it shows us exactly where they pick up and the bike and drop it off, regardless of whether it was at an offical station, public rack, or on the side of a road.
 
-*Checked for Null Values in the `member_casual` Column*
+*Checked For Null Values In The `member_casual` Column*
 
 As the stated goal of this analysis is to determine the difference in bike use behaviour between Members and Casual Riders, I checked to for any null values in the `member_casual` field. If null values exists, then those records need to be removed from the dataset as no inferences can be made without knowing the membership status of a user:
 
@@ -384,7 +384,7 @@ WHERE started_at IS NULL
 
 No null values were found.
 
-*Created New Columns Called `day_of_week` and `month`*
+*Created New Columns Called `day_of_week` And `month`*
 
 Part of my analysis will involve analyzing usage patterns depending on the day of the week and month of the year that each trip was begun, so these new columns were created to make it easier to perform granular trend analysis of the data. The new columns were created by extracting the information from the timestamps in the `started_at` column, thus transforming the raw timestamp data into actionable insights for understanding seasonal rider behaviour:
 
@@ -409,7 +409,7 @@ In order to prepare the dataset for the next steps in the process, I removed the
 
 This culling process also helped to reduce the size of the dataset, making it more efficient to process in the next steps.
 
-*Summary of Data Cleaning and Transformation Activities*
+*Summary Of Data Cleaning And Transformation Activities*
 
 The data cleaning and transformation phase prioritized data quality without compromising the representative volume of the dataset, reducing selection bias. Following a comprehensive audit of spatial and temporal integrity, 122,853 records (2.1%) were removed due to irreconcileable data gaps, thus eliminating noise. The resulting high-fidelity `cyclistic_tableau` dataset consists of 5,725,850 records. This high preservation rate (97.9%) ensures that the final analytical model remains unbiased, robust, and fully aligned with the requirements for the discovery of core insights, particularly those concerning Member versus Casual Rider behavior, and are based on a comprehensive and representative sample of the overall bike-share system usage.
 
@@ -478,7 +478,7 @@ To finalize the behavioural characterization of Cyclistic users, I performed an 
   <img src="images/time_of_day_analysis.png" alt="Time of Day Analysis"/>
 </div>
 
-* As we expected, the line chart shows sharp and distinct peaks around 08h00 and 17h00 in the Members group, which aligns closely with standard Chucago workday schedules. It confirms the utilitarian nature of these trips, i.e. that they are work commutes. This bimodal pattern is strong quantitative evidence that Members rely on Cyclistic's bike-share service as a primary transit method for the workday.
+* As we expected, the line chart shows sharp and distinct peaks around 08h00 and 17h00 in the Members group, which aligns closely with standard Chicago workday schedules. It confirms the utilitarian nature of these trips, i.e. that they are work commutes. This bimodal pattern is strong quantitative evidence that Members rely on Cyclistic's bike-share service as a primary transit method for the workday.
 * Also, as expected,  we see a more unimodal distribution with the Casual Riders group, with a gradual increase in trips that peak in the late afternoon, characteristic of recreational or tourist usage. The absence of a morning rush-hour peak indicates that this segment is not constrained by traitional workplace arrival times, further validating their profile as recreational or leisure-based users.
 * These temporal fingerprints provide proof that the two user segments are not just different in volume, but exhibit two different usage patterns.
 
@@ -501,12 +501,12 @@ The line chart below confirms the divergence in ride duration between the two us
   <img src="images/avg_ride_dur_day.png" alt="Average Ride Duration by Day"/>
 </div>
 
-* Members maintain a consistently stable and shorter average ride duration, regardless of the day of the week. There is a slight increase in trip duration for Member over the weekend, suggesting some recreational bike usage on their part.
+* Members maintain a consistently stable and shorter average ride duration, regardless of the day of the week. There is a slight increase in trip duration for Members over the weekend, suggesting some recreational bike usage on their part.
 * Again, Casual Riders demonstrate significant variability, with ride durations escalating sharply as the weekend approached, and peaking on the weekend. This weekend-dominant increase confirms a leisure-based intent, where the duration of the ride is extended for recreational exploration rather than functional transportation.
 
 **Usage by Bike Type**
 
-My cleaned dataset `cyclistic_tableau` contains only two type of bikes: 'classic bike' and 'electric bike'. I doubled-checked the original uncleaned dataset `cyclistic_12_months_dataset` to make sure that no bike types were lost from this analysis due to data cleaning - none were. We can speculate that the choice of bike might serve as an indicator of user intent, so to investigate this, I created the following visualization:
+My cleaned dataset `cyclistic_tableau` contains only two type of bikes: 'classic bike' and 'electric bike'. I doubled-checked the original uncleaned dataset `cyclistic_12_months_dataset` to make sure that no bike types were lost from this analysis due to data cleaning - none were. This deviates from what we are told in the brief regarding the different types of bikes available in the Cyclistic network. We can speculate that the choice of bike might serve as an indicator of user intent, so to investigate this, I created the following visualization:
 
 <div align="center">
   <img src="images/usage_by_bike_type.png" alt="Usage by Bike Type"/>
@@ -529,7 +529,7 @@ This visualization uses a comparative spatial flow matrix to contrast the bike-s
 * The Member panels in the right column demonstrate a high degree of spatial alignment between start and end locations, indicating a predictable, utilitarian communter loop, where riders utilize the service for round-trips, whereas for Casual Riders, there is a lower degree of spatial alignment, indicating that these trips are not return trips, but recreational in nature.
 * For Members, the relative evenness in size of the circles (representing the number of trips) in the start and end locations further indicates that these are mostly round-trips, whereas for Casual Riders, the larger circle size variance is suggestive of predominantly one-way trips that are recreational in nature.
 * The Member panels also show a greater geographic spread of ride start and end locations, with many rides going between residential suburbs and the central business district, whereas for Casual Riders, the trips are concentrated in known tourist areas of the city, most very near the lakefront.
-* This comparative spatial flow analysis clear shows the difference in usage patterns between the two user groups.
+* This comparative spatial flow analysis clearly shows the difference in usage patterns between the two user groups.
 
 **Net Flow Intensity Analysis**
 
@@ -563,15 +563,15 @@ Casual Riders exhibit a massive spike in usage on weekends, yet they currently p
 
 **Action:** Introduce a "Weekend-Only" annual membership that is significantly cheaper than the full annual membership.
 
-**The Logic:** This acts as a bridge product. It lowers the barrier to entry for frequent weekend users who are hesitant to commit to a full-week annual membership due to the higher cosst. By providing a cost-effective, high-value alternative to day passes, we capture their loyalty and normalize the subscriber relationship with Cyclistic.
+**The Logic:** This acts as a bridge product. It lowers the barrier to entry for frequent weekend users who are hesitant to commit to a full-week annual membership due to the higher cost. By providing a cost-effective, high-value alternative to day passes, we capture their loyalty and normalize their subscriber relationship with Cyclistic.
 
 **2. Off-Season Retention Campaigns**
 
 My analysis showed that Casual Riders virtually disappear during the Chicago winter (November–March).
 
-**Action:** Launch a "Winter Warm-up" promotion targeting high-frequency casual riders from the previous season.
+**Action:** Launch a "Winter Warm-up" promotion targeting high-frequency Casual Riders from the previous season.
 
-**The Logic:** Offer a trial month of annual membership at a significantly reduced rate during the shoulder months. By encouraging usage during the dead of winter, we can habituate casual riders to the service, potentially keeping them as active members once the warmer weather returns.
+**The Logic:** Offer a trial month of annual membership at a significantly reduced rate during the shoulder months. By encouraging usage during the dead of winter, we can habituate Casual Riders to the service, potentially keeping them as active members once the warmer weather returns.
 
 **3. Logistical Rebalancing Incentives**
 
@@ -579,7 +579,7 @@ I identified net-flow imbalances at key attractor nodes.
 
 **Action:** Implement a "System Balancer" reward program.
 
-**The Logic:** Leverage the casual rider base to assist in bike rebalancing. Offer loyalty points or small discounts toward an annual membership to casual riders who end their trips at high-demand stations where there is a net-departure deficit. This transforms a logistical challenge into a data-driven conversion tactic that rewards the user for helping the network's efficiency.
+**The Logic:** Leverage the Casual Rider base to assist in bike rebalancing. Offer loyalty points or small discounts toward an annual membership to casual riders who end their trips at high-demand stations where there is a net-departure deficit. This transforms a logistical challenge into a data-driven conversion tactic that rewards the user for helping the network's efficiency.
 
 **Future Considerations & Data Enhancements**
 
